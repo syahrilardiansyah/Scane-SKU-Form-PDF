@@ -1,6 +1,8 @@
 """
 OCR Engine - konversi PDF scan/gambar ke teks menggunakan Tesseract.
+Support PyInstaller bundled mode.
 """
+import sys
 import tempfile
 from pathlib import Path
 
@@ -10,8 +12,32 @@ from PIL import Image
 
 from config import OCR_LANGUAGES
 
-# Path ke Tesseract executable (Windows)
-TESSERACT_PATH = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
+def _get_tesseract_path() -> str:
+    r"""
+    Cari Tesseract executable.
+    Priority:
+    1. PyInstaller bundle (dist/tesseract/tesseract.exe)
+    2. Default install (C:\Program Files\Tesseract-OCR\tesseract.exe)
+    """
+    # Check if running as PyInstaller bundle
+    if getattr(sys, 'frozen', False):
+        # Running as EXE - look in bundle directory
+        bundle_dir = Path(sys.executable).parent
+        bundled_tesseract = bundle_dir / "tesseract" / "tesseract.exe"
+        if bundled_tesseract.exists():
+            return str(bundled_tesseract)
+
+    # Check default install path
+    default_path = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+    if Path(default_path).exists():
+        return default_path
+
+    # Try PATH
+    return "tesseract"
+
+
+TESSERACT_PATH = _get_tesseract_path()
 pytesseract.pytesseract.tesseract_cmd = TESSERACT_PATH
 
 
