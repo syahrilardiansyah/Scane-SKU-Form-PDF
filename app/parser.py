@@ -1,14 +1,18 @@
 """
 Parser - extract SKU, Nama Produk, Quantity dari teks PDF.
-Menggunakan regex pattern yang bisa dikonfigurasi.
+Mendukung format generic (regex) dan BigSeller (auto-detect).
 """
 import re
-from config import LINE_PATTERN
+from config import LINE_PATTERN, PDF_FORMAT
+from app.bigseller_parser import (
+    detect_bigseller_format,
+    parse_bigseller_full,
+)
 
 
 def parse_lines(text: str, pattern: str = None) -> list[dict]:
     """
-    Parse teks PDF menjadi list data produk.
+    Parse teks PDF menjadi list data produk (generic format).
 
     Args:
         text: Teks hasil dari PDF reader atau OCR
@@ -91,3 +95,28 @@ def validate_data(data: list[dict]) -> list[dict]:
             continue
         valid.append(item)
     return valid
+
+
+def parse_auto(text: str) -> list[dict]:
+    """
+    Auto-detect format PDF dan parse sesuai format.
+    - BigSeller → gunakan bigseller_parser
+    - Generic → gunakan regex patterns
+
+    Returns:
+        List of dict: [{"sku": "...", "nama": "...", "qty": int}, ...]
+    """
+    # Check config override
+    if PDF_FORMAT == "bigseller":
+        return parse_bigseller_full(text)
+    elif PDF_FORMAT == "generic":
+        raw = parse_with_multiple_patterns(text)
+        return validate_data(raw)
+
+    # Auto-detect: coba BigSeller dulu
+    if detect_bigseller_format(text):
+        return parse_bigseller_full(text)
+
+    # Fallback ke generic parser
+    raw = parse_with_multiple_patterns(text)
+    return validate_data(raw)

@@ -29,6 +29,9 @@ hasil_rekap.xlsx
 test_rekap.xlsx
 *.xlsx
 
+# Sample files
+file/
+
 # Temporary
 *.tmp
 *.log

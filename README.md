@@ -1,9 +1,13 @@
 # Rekap SKU PDF Scanner
 
+**Version: 2.0.0**
+
 Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, Nama, Quantity), mengelompokkan berdasarkan SKU, dan mengekspor hasil rekap ke Excel.
 
 ## Fitur
 
+- **BigSeller Auto-Detect** — otomatis deteksi format PDF BigSeller
+- **Split Bundle** — bundle SKU otomatis di-split per komponen produk
 - **PDF Text Reader** — membaca PDF berbasis teks langsung
 - **OCR Engine** — membaca PDF scan/gambar via Tesseract OCR
 - **Configurable Parser** — regex pattern bisa disesuaikan dengan format PDF
@@ -107,8 +111,9 @@ Rekap_SKU_PDF/
     ├── main.py             # UI (CustomTkinter)
     ├── pdf_reader.py       # PDF text reader
     ├── ocr_engine.py       # OCR engine
-    ├── parser.py           # Extract SKU/Nama/Qty
-    ├── rekap.py            # Group by SKU
+    ├── parser.py           # Extract SKU/Nama/Qty (auto-detect format)
+    ├── bigseller_parser.py # Parser khusus format BigSeller
+    ├── rekap.py            # Group by SKU + split bundle
     ├── export.py           # Export to Excel
     └── kill_switch.py      # Remote shutdown
 ```

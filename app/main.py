@@ -9,7 +9,7 @@ import threading
 
 from app.pdf_reader import read_pdf_text, pdf_has_text
 from app.ocr_engine import ocr_pdf
-from app.parser import parse_with_multiple_patterns, validate_data
+from app.parser import parse_auto
 from app.rekap import rekap_to_dataframe
 from app.export import export_to_excel
 from config import PDF_READ_MODE
@@ -108,9 +108,7 @@ class App(ctk.CTk):
         table_header = ctk.CTkFrame(results_frame, fg_color="#2B5797")
         table_header.pack(fill="x", padx=1, pady=(1, 0))
 
-        ctk.CTkLabel(table_header, text="SKU", width=150, anchor="w",
-                      font=ctk.CTkFont(weight="bold")).pack(side="left", padx=5)
-        ctk.CTkLabel(table_header, text="Nama Produk", width=300, anchor="w",
+        ctk.CTkLabel(table_header, text="SKU", width=400, anchor="w",
                       font=ctk.CTkFont(weight="bold")).pack(side="left", padx=5)
         ctk.CTkLabel(table_header, text="Total Qty", width=100, anchor="e",
                       font=ctk.CTkFont(weight="bold")).pack(side="right", padx=5)
@@ -204,8 +202,7 @@ class App(ctk.CTk):
             self.after(0, lambda: self.status_label.configure(text="Mengekstrak data..."))
             self.after(0, lambda: self.progress.set(0.5))
 
-            raw_data = parse_with_multiple_patterns(text)
-            raw_data = validate_data(raw_data)
+            raw_data = parse_auto(text)
 
             if not raw_data:
                 self.after(0, lambda: self._show_error(
@@ -219,7 +216,7 @@ class App(ctk.CTk):
             self.after(0, lambda: self.status_label.configure(text="Mengelompokkan SKU..."))
             self.after(0, lambda: self.progress.set(0.7))
 
-            df = rekap_to_dataframe(raw_data)
+            df = rekap_to_dataframe(raw_data, split_bundles=True)
             self.rekap_data = df.to_dict("records")
 
             # Step 4: Tampilkan hasil
@@ -240,9 +237,7 @@ class App(ctk.CTk):
             row_frame = ctk.CTkFrame(self.results_scroll, fg_color="transparent")
             row_frame.pack(fill="x", pady=1)
 
-            ctk.CTkLabel(row_frame, text=row["SKU"], width=150, anchor="w",
-                          font=ctk.CTkFont(size=12)).pack(side="left", padx=5)
-            ctk.CTkLabel(row_frame, text=row["Nama Produk"], width=300, anchor="w",
+            ctk.CTkLabel(row_frame, text=row["SKU"], width=400, anchor="w",
                           font=ctk.CTkFont(size=12)).pack(side="left", padx=5)
             ctk.CTkLabel(row_frame, text=str(row["Total Quantity"]), width=100, anchor="e",
                           font=ctk.CTkFont(size=12, weight="bold")).pack(side="right", padx=5)

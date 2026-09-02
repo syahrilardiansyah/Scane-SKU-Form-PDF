@@ -3,17 +3,18 @@ Konfigurasi parser PDF.
 Adjust regex pattern sesuai format PDF kamu.
 """
 
-# Regex pattern untuk extract data dari satu baris PDF
+# ============================================================
+# PDF FORMAT DETECTION
+# ============================================================
+# "auto" = detect format otomatis (BigSeller atau generic)
+# "generic" = pakai regex pattern lama
+# "bigseller" = pakai parser khusus BigSeller
+PDF_FORMAT = "auto"
+
+# Regex pattern untuk extract data dari satu baris PDF (generic format)
 # Grup 1: SKU, Grup 2: Nama Produk, Grup 3: Quantity
 # Contoh baris: "Bodymask2  Body Mask Whitening  5"
-# Atau: "Bodymask2 | Body Mask Whitening | 5"
-
-# Pattern default - pisahkan dengan spasi atau tab
-# Adjust sesuai format PDF asli kamu
 LINE_PATTERN = r"^(.+?)\s{2,}(.+?)\s{2,}(\d+)\s*$"
-
-# Alternatif: jika dipisah dengan pipe |
-# LINE_PATTERN = r"^(.+?)\s*\|\s*(.+?)\s*\|\s*(\d+)\s*$"
 
 # PDF reader mode: "text" atau "ocr" atau "auto"
 # "text" = coba baca teks dulu
