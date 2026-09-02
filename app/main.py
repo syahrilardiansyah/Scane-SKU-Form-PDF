@@ -19,9 +19,9 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Rekap SKU PDF Scanner")
-        self.geometry("900x650")
-        self.minsize(800, 550)
+        self.title("Rekap SKU PDF Scanner v2.0.0")
+        self.geometry("950x700")
+        self.minsize(850, 600)
 
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("blue")
@@ -42,6 +42,13 @@ class App(ctk.CTk):
             text="Rekap SKU PDF Scanner",
             font=ctk.CTkFont(size=22, weight="bold"),
         ).pack(side="left")
+
+        ctk.CTkLabel(
+            header,
+            text="v2.0.0",
+            font=ctk.CTkFont(size=12),
+            text_color="gray",
+        ).pack(side="left", padx=10)
 
         # File selection frame
         file_frame = ctk.CTkFrame(self)
@@ -100,7 +107,7 @@ class App(ctk.CTk):
         self.progress.pack(fill="x", padx=20, pady=(0, 10))
         self.progress.set(0)
 
-        # Results table (using CTkScrollableFrame + labels)
+        # Results table
         results_frame = ctk.CTkFrame(self)
         results_frame.pack(fill="both", expand=True, padx=20, pady=(0, 5))
 
@@ -108,14 +115,28 @@ class App(ctk.CTk):
         table_header = ctk.CTkFrame(results_frame, fg_color="#2B5797")
         table_header.pack(fill="x", padx=1, pady=(1, 0))
 
-        ctk.CTkLabel(table_header, text="SKU", width=400, anchor="w",
+        ctk.CTkLabel(table_header, text="No", width=50, anchor="center",
                       font=ctk.CTkFont(weight="bold")).pack(side="left", padx=5)
-        ctk.CTkLabel(table_header, text="Total Qty", width=100, anchor="e",
+        ctk.CTkLabel(table_header, text="SKU / Nama Produk", width=450, anchor="w",
+                      font=ctk.CTkFont(weight="bold")).pack(side="left", padx=5)
+        ctk.CTkLabel(table_header, text="Jumlah", width=120, anchor="e",
                       font=ctk.CTkFont(weight="bold")).pack(side="right", padx=5)
 
         # Scrollable results
         self.results_scroll = ctk.CTkScrollableFrame(results_frame)
         self.results_scroll.pack(fill="both", expand=True, padx=1, pady=1)
+
+        # Summary frame
+        self.summary_frame = ctk.CTkFrame(self, fg_color="#1a1a2e")
+        self.summary_frame.pack(fill="x", padx=20, pady=(0, 5))
+
+        self.summary_label = ctk.CTkLabel(
+            self.summary_frame,
+            text="",
+            font=ctk.CTkFont(size=12, weight="bold"),
+            anchor="w",
+        )
+        self.summary_label.pack(padx=10, pady=8, anchor="w")
 
         # Export button
         export_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -153,6 +174,7 @@ class App(ctk.CTk):
             self.status_label.configure(text="")
             self.export_btn.configure(state="disabled")
             self.export_label.configure(text="")
+            self.summary_label.configure(text="")
             self._clear_results()
 
     def _clear_results(self):
@@ -169,7 +191,6 @@ class App(ctk.CTk):
         self.status_label.configure(text="Membaca PDF...")
         self.progress.set(0.1)
 
-        # Run in thread agar UI tidak freeze
         thread = threading.Thread(target=self._do_process, daemon=True)
         thread.start()
 
@@ -178,7 +199,6 @@ class App(ctk.CTk):
             mode = self.mode_var.get()
             text = ""
 
-            # Step 1: Baca PDF
             self.after(0, lambda: self.status_label.configure(text="Membaca PDF..."))
             self.after(0, lambda: self.progress.set(0.2))
 
@@ -186,7 +206,7 @@ class App(ctk.CTk):
                 text = ocr_pdf(self.pdf_path)
             elif mode == "text":
                 text = read_pdf_text(self.pdf_path)
-            else:  # auto
+            else:
                 if pdf_has_text(self.pdf_path):
                     text = read_pdf_text(self.pdf_path)
                 else:
@@ -198,7 +218,6 @@ class App(ctk.CTk):
                 self.after(0, lambda: self._show_error("Tidak ada teks yang bisa dibaca dari PDF."))
                 return
 
-            # Step 2: Parse data
             self.after(0, lambda: self.status_label.configure(text="Mengekstrak data..."))
             self.after(0, lambda: self.progress.set(0.5))
 
@@ -212,18 +231,16 @@ class App(ctk.CTk):
 
             self.raw_data = raw_data
 
-            # Step 3: Rekap
             self.after(0, lambda: self.status_label.configure(text="Mengelompokkan SKU..."))
             self.after(0, lambda: self.progress.set(0.7))
 
             df = rekap_to_dataframe(raw_data, split_bundles=True)
             self.rekap_data = df.to_dict("records")
 
-            # Step 4: Tampilkan hasil
             self.after(0, lambda: self._display_results(df))
             self.after(0, lambda: self.progress.set(1.0))
             self.after(0, lambda: self.status_label.configure(
-                text=f"Selesai! {len(self.rekap_data)} SKU ditemukan dari {len(self.raw_data)} data."))
+                text=f"Selesai! {len(self.rekap_data)} produk ditemukan."))
 
         except Exception as e:
             self.after(0, lambda: self._show_error(f"Error: {str(e)}"))
@@ -233,14 +250,31 @@ class App(ctk.CTk):
     def _display_results(self, df):
         self._clear_results()
 
-        for _, row in df.iterrows():
-            row_frame = ctk.CTkFrame(self.results_scroll, fg_color="transparent")
+        total_qty = 0
+        alt_colors = ["#1a1a2e", "#16213e"]
+
+        for idx, (_, row) in enumerate(df.iterrows()):
+            bg_color = alt_colors[idx % 2]
+            row_frame = ctk.CTkFrame(self.results_scroll, fg_color=bg_color)
             row_frame.pack(fill="x", pady=1)
 
-            ctk.CTkLabel(row_frame, text=row["SKU"], width=400, anchor="w",
-                          font=ctk.CTkFont(size=12)).pack(side="left", padx=5)
-            ctk.CTkLabel(row_frame, text=str(row["Total Quantity"]), width=100, anchor="e",
-                          font=ctk.CTkFont(size=12, weight="bold")).pack(side="right", padx=5)
+            # No
+            ctk.CTkLabel(row_frame, text=str(idx + 1), width=50, anchor="center",
+                          font=ctk.CTkFont(size=12), text_color="gray").pack(side="left", padx=5)
+            # SKU
+            ctk.CTkLabel(row_frame, text=row["SKU"], width=450, anchor="w",
+                          font=ctk.CTkFont(size=12, weight="bold")).pack(side="left", padx=5)
+            # Qty
+            qty = row["Total Quantity"]
+            total_qty += qty
+            ctk.CTkLabel(row_frame, text=str(qty), width=120, anchor="e",
+                          font=ctk.CTkFont(size=13, weight="bold"),
+                          text_color="#28a745").pack(side="right", padx=5)
+
+        # Summary
+        self.summary_label.configure(
+            text=f"Total: {len(df)} produk  |  {total_qty} unit keseluruhan"
+        )
 
         self.export_btn.configure(state="normal")
 
