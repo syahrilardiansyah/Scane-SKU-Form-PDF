@@ -4,6 +4,29 @@
 
 Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, Nama, Quantity), mengelompokkan berdasarkan SKU, dan mengekspor hasil rekap ke Excel.
 
+## Download (EXE)
+
+**Untuk user yang tidak paham coding, langsung download:**
+
+1. Buka [Releases](https://github.com/syahrilardiansyah/Rekap_SKU_PDF/releases)
+2. Download `RekapSKU-v2.0.0.zip`
+3. Extract ke sembarang folder
+4. Double-click `RekapSKU.exe`
+5. Langsung pakai - tidak perlu install apapun!
+
+**Penting:**
+- Folder `tesseract/` harus tetap satu folder dengan `RekapSKU.exe`
+- Jangan hapus folder `tesseract/`
+
+## Cara Pakai
+
+1. Buka aplikasi `RekapSKU.exe`
+2. Klik **Pilih PDF** → pilih file PDF
+3. Pilih mode baca (auto/text/ocr)
+4. Klik **Proses PDF**
+5. Lihat hasil rekap di tabel
+6. Klik **Export ke Excel** → pilih lokasi simpan
+
 ## Fitur
 
 - **BigSeller Auto-Detect** — otomatis deteksi format PDF BigSeller
@@ -26,7 +49,7 @@ Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, N
 | Export | openpyxl |
 | UI | CustomTkinter |
 
-## Instalasi
+## Instalasi (Developer)
 
 ### Prerequisites
 
@@ -46,19 +69,30 @@ cd Rekap_SKU_PDF
 pip install -r requirements.txt
 ```
 
-## Cara Jalankan
+### Jalankan
 
 ```bash
 python run.py
 ```
+
+### Build ke EXE
+
+```bash
+# Jalankan script build
+build.bat
+```
+
+Output: `dist/RekapSKU.exe`
 
 ## Konfigurasi
 
 Edit `config.py` untuk menyesuaikan:
 
 ```python
-# Regex pattern untuk extract data
-# Grup 1: SKU, Grup 2: Nama Produk, Grup 3: Quantity
+# Format PDF: "auto", "generic", "bigseller"
+PDF_FORMAT = "auto"
+
+# Regex pattern untuk extract data (generic format)
 LINE_PATTERN = r"^(.+?)\s{2,}(.+?)\s{2,}(\d+)\s*$"
 
 # Mode baca PDF: "auto", "text", "ocr"
@@ -68,43 +102,13 @@ PDF_READ_MODE = "auto"
 OCR_LANGUAGES = "ind+eng"
 ```
 
-### Contoh Format PDF
-
-```
-Bodymask2    Body Mask Whitening    5
-SerumVC      Serum Vitamin C        2
-LotionAL     Lotion Aloe Vera       1
-```
-
-Jika format PDF berbeda, sesuaikan `LINE_PATTERN` di `config.py`.
-
-## Remote Kill Switch
-
-Developer dapat mematikan aplikasi secara remote melalui GitHub Gist.
-
-### Setup
-
-1. Buat GitHub Gist baru (public)
-2. Isi dengan JSON:
-```json
-{"active": true, "message": "", "shutdown_at": null}
-```
-3. Copy Gist ID dari URL
-4. Paste ke `config.py`:
-```python
-KILL_SWITCH_GIST_ID = "YOUR_GIST_ID_HERE"
-```
-
-### Shutdown
-
-Edit Gist → set `"active": false` → semua user tidak bisa menjalankan app.
-
 ## Struktur Project
 
 ```
 Rekap_SKU_PDF/
 ├── run.py                  # Entry point
 ├── config.py               # Konfigurasi
+├── build.bat               # Script build ke EXE
 ├── requirements.txt        # Dependencies
 ├── LICENSE                  # Lisensi
 └── app/

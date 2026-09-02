@@ -94,8 +94,22 @@ echo.
 echo Output: dist\RekapSKU.exe
 echo Tesseract: dist\tesseract\
 echo.
+
+:: Create zip for distribution
+echo Membuat zip untuk distribusi...
+powershell -command "Compress-Archive -Path 'dist\*' -DestinationPath 'dist\RekapSKU-v2.0.0.zip' -Force"
+if exist "dist\RekapSKU-v2.0.0.zip" (
+    echo Zip berhasil: dist\RekapSKU-v2.0.0.zip
+) else (
+    echo Gagal membuat zip.
+)
+
+echo.
 echo Untuk menjalankan:
 echo   1. Copy folder "dist" ke komputer user
 echo   2. Double-click RekapSKU.exe
+echo.
+echo Untuk upload ke GitHub Releases:
+echo   Upload file: dist\RekapSKU-v2.0.0.zip
 echo.
 pause
