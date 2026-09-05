@@ -38,6 +38,22 @@ Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, N
 - **Export Excel** — output ke file `.xlsx` dengan format rapi
 - **Remote Kill Switch** — kontrol akses via GitHub Gist
 
+## Keamanan
+
+| Aspek | Status | Keterangan |
+|-------|--------|------------|
+| Data tetap lokal | Aman | Tidak ada data yang dikirim ke internet |
+| Tidak ada tracking | Aman | Tidak ada analytics atau telemetry |
+| Source code public | Aman | Bisa di-review di GitHub |
+| Open source libraries | Aman | PyMuPDF, Tesseract, Pandas sudah trusted |
+| EXE tidak di-sign | Warning | Windows mungkin tampilkan warning pertama kali |
+
+**Catatan penting:**
+- Aplikasi ini **offline** — semua proses terjadi di komputer user
+- **Tidak ada data** yang dikirim ke server manapun
+- File PDF dan Excel tetap di komputer user
+- Windows SmartScreen mungkin warning karena EXE tidak di-sign certificate — klik "More info" → "Run anyway"
+
 ## Tech Stack
 
 | Komponen | Library |
