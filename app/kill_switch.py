@@ -48,12 +48,12 @@ def get_kill_switch_config():
             return data
 
     except urllib.error.URLError:
-        # Jika tidak ada internet, allow app jalan (offline mode)
-        return {"active": True, "message": "Offline mode - kill switch not checked", "shutdown_at": None}
+        # Network error - block app for security (fail-closed)
+        return {"active": False, "message": "Tidak dapat memverifikasi lisensi. Periksa koneksi internet.", "shutdown_at": None}
     except json.JSONDecodeError:
-        return {"active": True, "message": "Invalid JSON in kill switch config", "shutdown_at": None}
+        return {"active": False, "message": "Konfigurasi kill switch tidak valid.", "shutdown_at": None}
     except Exception as e:
-        return {"active": True, "message": f"Error checking kill switch: {e}", "shutdown_at": None}
+        return {"active": False, "message": f"Error verifikasi: {e}", "shutdown_at": None}
 
 
 def check_kill_switch():
