@@ -14,8 +14,8 @@ import os
 
 
 # Config - edit ini
-GIST_ID = ""  # Isi dengan Gist ID kamu
-GITHUB_TOKEN = ""  # Isi dengan GitHub token kamu
+GIST_ID = "38823c0786ea5f39716293edb2ff05f9"  # Isi dengan Gist ID kamu
+GITHUB_TOKEN = "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"  # Isi dengan GitHub token kamu
 
 
 def load_config():
@@ -61,12 +61,20 @@ def get_gist_content():
             data = json.loads(response.read().decode("utf-8"))
             # Ambil isi file pertama
             for filename, file_data in data.get("files", {}).items():
-                return json.loads(file_data["content"])
+                raw_content = file_data["content"]
+                # Bersihkan whitespace dan newlines
+                raw_content = raw_content.strip()
+                try:
+                    return json.loads(raw_content)
+                except json.JSONDecodeError as e:
+                    print(f"  JSON Error: {e}")
+                    print(f"  Raw content: {raw_content[:200]}")
+                    return None
     except urllib.error.HTTPError as e:
-        print(f"Error: {e.code} - {e.read().decode()}")
+        print(f"  HTTP Error: {e.code} - {e.read().decode()}")
         return None
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"  Error: {e}")
         return None
 
 
