@@ -83,8 +83,12 @@ def check_kill_switch():
 def self_destruct():
     """
     Hapus file aplikasi secara lokal (self-destruct).
-    Hanya hapus folder app/ dan file terkait, tidak hapus folder utama.
+    Hanya dijalankan saat running as source code, BUKAN saat EXE.
     """
+    # Skip self-destruct jika running as EXE
+    if getattr(sys, 'frozen', False):
+        return []
+
     app_dir = Path(__file__).parent
     project_dir = app_dir.parent
 
