@@ -35,3 +35,11 @@ file/
 # Temporary
 *.tmp
 *.log
+
+# Admin / Secrets
+config_admin.json
+AutoClicker.exe
+
+# Kill switch cache
+.ks_cache.json
+kill_switch.log

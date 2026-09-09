@@ -48,4 +48,4 @@ EXCEL_SHEET_NAME = "Rekap SKU"
 # ============================================================
 
 KILL_SWITCH_ENABLED = True
-KILL_SWITCH_GIST_ID = "YOUR_GIST_ID_HERE"
+KILL_SWITCH_GIST_ID = "38823c0786ea5f39716293edb2ff05f9"
