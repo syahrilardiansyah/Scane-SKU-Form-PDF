@@ -124,6 +124,7 @@ OCR_LANGUAGES = "ind+eng"
 Rekap_SKU_PDF/
 ├── run.py                  # Entry point
 ├── config.py               # Konfigurasi
+├── admin.py                # Admin kill switch
 ├── build.bat               # Script build ke EXE
 ├── requirements.txt        # Dependencies
 ├── LICENSE                  # Lisensi
@@ -136,6 +137,51 @@ Rekap_SKU_PDF/
     ├── rekap.py            # Group by SKU + split bundle
     ├── export.py           # Export to Excel
     └── kill_switch.py      # Remote shutdown
+```
+
+## Admin Kill Switch
+
+Untuk mengontrol kill switch (aktifkan/nonaktifkan aplikasi dari jarak jauh):
+
+### Setup
+
+1. Buat [GitHub Personal Access Token](https://github.com/settings/tokens)
+   - Scope: `gist`
+2. Buat [GitHub Gist](https://gist.github.com) baru (public)
+   - Filename: `kill_switch.json`
+   - Content:
+   ```json
+   {"active": true, "message": "", "shutdown_at": null}
+   ```
+3. Copy Gist ID dari URL
+4. Jalankan:
+   ```bash
+   python admin.py
+   ```
+5. Masukkan Gist ID dan Token saat diminta
+
+### Menu Admin
+
+```
+1. Lihat Status        - Cek status kill switch saat ini
+2. Toggle ON/OFF       - Aktifkan/nonaktifkan aplikasi
+3. Set Shutdown Jadwal  - Matikan aplikasi di waktu tertentu
+4. Update Config       - Ganti Gist ID atau Token
+0. Keluar
+```
+
+### Contoh Penggunaan
+
+**Matikan semua aplikasi user:**
+```
+Pilih: 2
+Status: OFF (Aplikasi mati)
+```
+
+**Hidupkan kembali:**
+```
+Pilih: 2
+Status: ON (Aplikasi aktif)
 ```
 
 ## License
