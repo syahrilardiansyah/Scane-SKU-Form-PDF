@@ -300,14 +300,16 @@ def split_bundles(data: list[dict]) -> list[dict]:
 
 
 def merge_duplicates(data: list[dict]) -> list[dict]:
-    """Merge item dengan SKU yang sama, jumlahkan quantity."""
-    merged = defaultdict(lambda: {"sku": "", "nama": "", "qty": 0})
+    """Merge item dengan SKU yang sama (case-insensitive), jumlahkan quantity."""
+    merged = {}
     for item in data:
         sku = item["sku"]
-        if not merged[sku]["sku"]:
-            merged[sku]["sku"] = sku
-            merged[sku]["nama"] = item["nama"]
-        merged[sku]["qty"] += item["qty"]
+        sku_key = sku.upper()  # Case-insensitive key
+
+        if sku_key not in merged:
+            merged[sku_key] = {"sku": sku, "nama": item["nama"], "qty": 0}
+        merged[sku_key]["qty"] += item["qty"]
+
     return list(merged.values())
 
 
