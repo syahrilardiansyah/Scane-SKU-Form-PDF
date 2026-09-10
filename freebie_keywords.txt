@@ -1,0 +1,14 @@
+# Freebie Keywords - Satu keyword per baris
+# Item yang mengandung keyword ini akan di-exclude dari hasil rekap
+# Contoh: Stickerpack, GelangCouple, Tester, dll
+# Edit file ini tanpa perlu rebuild EXE
+
+stickerpack
+sticker pack
+gelangcouple
+gelang couple
+tester
+freebiest
+free claim
+freegelang
+freesticker
