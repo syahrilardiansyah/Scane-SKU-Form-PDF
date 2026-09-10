@@ -241,6 +241,10 @@ def parse_bigseller(text: str) -> list[dict]:
         # Found possible SKU line
         sku_candidate = line
 
+        # Handle "SKU --" pattern (bundle marker on same line)
+        if sku_candidate.endswith(" --"):
+            sku_candidate = sku_candidate[:-3].strip()
+
         # Look ahead: is next line "Default Shelf" or "--"?
         if i + 1 >= n:
             i += 1
@@ -267,6 +271,15 @@ def parse_bigseller(text: str) -> list[dict]:
                 results.append({"sku": sku_candidate, "nama": nama, "qty": qty})
                 i += 3
                 continue
+
+        # Bundle product: SKU --, Quantity (bundle marker on same line as SKU)
+        elif is_quantity_line(next_line) and "+" in sku_candidate:
+            qty = int(next_line)
+            name_lines = _collect_name_before(lines, i)
+            nama = " ".join(name_lines) if name_lines else sku_candidate
+            results.append({"sku": sku_candidate, "nama": nama, "qty": qty})
+            i += 2
+            continue
 
         i += 1
 
@@ -343,10 +356,10 @@ def validate_bigseller_data(data: list[dict]) -> list[dict]:
 
 
 def parse_bigseller_full(text: str) -> list[dict]:
-    """Full pipeline: parse + validate + split bundles + merge."""
+    """Full pipeline: parse + split bundles + validate + merge."""
     raw = parse_bigseller(text)
-    valid = validate_bigseller_data(raw)
-    expanded = split_bundles(valid)
-    merged = merge_duplicates(expanded)
+    expanded = split_bundles(raw)
+    valid = validate_bigseller_data(expanded)
+    merged = merge_duplicates(valid)
     merged.sort(key=lambda x: x["qty"], reverse=True)
     return merged
