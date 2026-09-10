@@ -20,6 +20,8 @@ Cara pakai:
 5. Set Gist sebagai public agar bisa diakses tanpa auth
 """
 
+import time
+
 import json
 import os
 import sys
@@ -90,7 +92,8 @@ def get_kill_switch_config():
             _log("No Gist ID configured")
             return {"active": True, "message": "No Gist ID configured", "shutdown_at": None}
 
-        url = f"https://gist.githubusercontent.com/raw/{KILL_SWITCH_GIST_ID}"
+        cache_bust = int(time.time())
+        url = f"https://gist.githubusercontent.com/raw/{KILL_SWITCH_GIST_ID}?t={cache_bust}"
         _log(f"Fetching: {url}")
         req = urllib.request.Request(url, headers={"User-Agent": "RekapSKU/1.0"})
         with urllib.request.urlopen(req, timeout=15) as response:
