@@ -7,6 +7,11 @@ Format BigSeller:
   Default Shelf | --
   [Quantity]
   [*OrderCode : qty] ... (order codes, skip these)
+
+Handles:
+- Line wrapping (e.g., "DeoPinkWonde" + "r" → "DeoPinkWonder")
+- Bundle splitting (SKU1+SKU2 → split qty to each SKU)
+- Freebie exclusion (Stickerpack, GelangCouple, Tester)
 """
 import re
 from collections import defaultdict
@@ -28,7 +33,7 @@ def is_possible_sku(line: str) -> bool:
     SKU biasanya: 2-30 chars, single word, alphanumeric + few special chars.
     """
     s = line.strip()
-    if not s or len(s) > 30:
+    if not s or len(s) > 50:
         return False
     if is_order_code(s):
         return False
@@ -75,31 +80,65 @@ def is_non_product_line(line: str) -> bool:
     return False
 
 
-def clean_product_name(name: str, sku: str = "") -> str:
-    """Bersihkan nama produk, ambil bagian penting saja."""
-    name = re.sub(r"\s+", " ", name).strip()
-    # Hapus prefix [Wifey Project-...]
-    name = re.sub(r"^\[.*?\]\s*", "", name)
-    # Hapus SKU dari nama jika ada
-    if sku and sku in name:
-        name = name.replace(sku, "").strip(" -+")
-    # Hapus brand names di awal
-    for brand in ("BEACH", "FIVESTAR", "MIDNIGHT", "MANGO", "WATERMELON"):
-        if name.startswith(brand):
-            name = name[len(brand):].strip(" -+")
-    # Hapus trailing "99" atau angka yang terpotong
-    name = re.sub(r"\s*\|\s*\d{1,2}$", "", name)
-    # Batasi panjang nama
-    if len(name) > 80:
-        name = name[:77] + "..."
-    return name.strip() if name else sku
+def is_freebie_item(sku: str, nama: str) -> bool:
+    """Cek apakah item adalah freebie/gift yang harus di-exclude."""
+    sku_lower = sku.lower()
+    nama_lower = nama.lower()
+
+    # Exclude by SKU name
+    freebie_skus = [
+        "stickerpack", "gelangcouple", "tester",
+        "freegelang", "freesticker", "freeclaim",
+        "gift", "bonus", "hadiah", "freebiest",
+    ]
+    for fb in freebie_skus:
+        if fb in sku_lower:
+            return True
+
+    # Exclude by product name
+    freebie_names = [
+        "sticker pack", "stickerpack", "gelang couple", "gelangcouple",
+        "freebiest", "free claim", "freebi", "tester",
+        "stiker", "gelang",
+    ]
+    for fn in freebie_names:
+        if fn in nama_lower:
+            return True
+
+    return False
 
 
-def detect_bigseller_format(text: str) -> bool:
-    """Deteksi apakah teks berasal dari format BigSeller."""
-    markers = ["Default Shelf", "Informasi Produk", "Jumlah Paket"]
-    found = sum(1 for m in markers if m in text)
-    return found >= 2
+def _fix_line_wrapping(lines: list[str]) -> list[str]:
+    """
+    Fix line wrapping issue.
+    Contoh: "Allofme100mL+DeoPinkWonde" diikuti "r" → "Allofme100mL+DeoPinkWonder"
+    """
+    fixed = []
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
+
+        # Check if this looks like a truncated SKU (ends mid-word, next line is short)
+        if (i + 1 < len(lines)
+                and is_possible_sku(line)
+                and "+" in line):
+            next_line = lines[i + 1].strip()
+            # If next line is a single short word (likely continuation)
+            if (next_line
+                    and len(next_line) <= 5
+                    and is_possible_sku(next_line)
+                    and not is_quantity_line(next_line)
+                    and next_line not in ("Default Shelf", "--")):
+                # Join them
+                combined = line + next_line
+                fixed.append(combined)
+                i += 2
+                continue
+
+        fixed.append(lines[i])
+        i += 1
+
+    return fixed
 
 
 def _collect_name_before(lines: list[str], sku_idx: int) -> list[str]:
@@ -127,6 +166,17 @@ def _collect_name_before(lines: list[str], sku_idx: int) -> list[str]:
     return name_lines
 
 
+def _split_bundle_sku(sku: str) -> list[str]:
+    """
+    Split bundle SKU menjadi individual SKUs.
+    Contoh: "Allofme100mL+City100mL" → ["Allofme100mL", "City100mL"]
+    """
+    if "+" in sku:
+        parts = sku.split("+")
+        return [p.strip() for p in parts if p.strip()]
+    return [sku]
+
+
 def parse_bigseller(text: str) -> list[dict]:
     """
     Parse teks PDF format BigSeller.
@@ -136,6 +186,10 @@ def parse_bigseller(text: str) -> list[dict]:
     """
     results = []
     lines = text.splitlines()
+
+    # Fix line wrapping first
+    lines = _fix_line_wrapping(lines)
+
     n = len(lines)
     i = 0
 
@@ -172,7 +226,7 @@ def parse_bigseller(text: str) -> list[dict]:
             if i + 2 < n and is_quantity_line(lines[i + 2].strip()):
                 qty = int(lines[i + 2].strip())
                 name_lines = _collect_name_before(lines, i)
-                nama = clean_product_name(" ".join(name_lines), sku_candidate) if name_lines else sku_candidate
+                nama = " ".join(name_lines) if name_lines else sku_candidate
                 results.append({"sku": sku_candidate, "nama": nama, "qty": qty})
                 i += 3
                 continue
@@ -182,7 +236,7 @@ def parse_bigseller(text: str) -> list[dict]:
             if i + 2 < n and is_quantity_line(lines[i + 2].strip()):
                 qty = int(lines[i + 2].strip())
                 name_lines = _collect_name_before(lines, i)
-                nama = clean_product_name(" ".join(name_lines), sku_candidate) if name_lines else sku_candidate
+                nama = " ".join(name_lines) if name_lines else sku_candidate
                 results.append({"sku": sku_candidate, "nama": nama, "qty": qty})
                 i += 3
                 continue
@@ -190,6 +244,32 @@ def parse_bigseller(text: str) -> list[dict]:
         i += 1
 
     return results
+
+
+def split_bundles(data: list[dict]) -> list[dict]:
+    """
+    Split bundle SKU dan distribusi quantity ke masing-masing SKU.
+    Contoh: {"sku": "Allofme100mL+City100mL", "qty": 5}
+    → [{"sku": "Allofme100mL", "qty": 5}, {"sku": "City100mL", "qty": 5}]
+    """
+    expanded = []
+    for item in data:
+        sku = item["sku"]
+        parts = _split_bundle_sku(sku)
+
+        if len(parts) > 1:
+            # It's a bundle - split to individual SKUs
+            for part in parts:
+                expanded.append({
+                    "sku": part,
+                    "nama": item["nama"],
+                    "qty": item["qty"]
+                })
+        else:
+            # Single SKU - keep as is
+            expanded.append(item)
+
+    return expanded
 
 
 def merge_duplicates(data: list[dict]) -> list[dict]:
@@ -212,22 +292,32 @@ def validate_bigseller_data(data: list[dict]) -> list[dict]:
         qty = item.get("qty", 0)
         if not sku or qty <= 0:
             continue
+
+        # Skip non-product items
         skip_skus = {"BUBBLEWRAP+KARDUS", "EXTRA PACKING WAJIB"}
         if sku in skip_skus:
             continue
-        # Skip non-product items by name
+
+        # Skip by name keywords
         nama = item.get("nama", "").lower()
         skip_keywords = ["extra packing", "bubblewrap", "kardus", "pengiriman"]
         if any(kw in nama for kw in skip_keywords):
             continue
+
+        # Skip freebie items
+        if is_freebie_item(sku, item.get("nama", "")):
+            continue
+
         valid.append(item)
+
     return valid
 
 
 def parse_bigseller_full(text: str) -> list[dict]:
-    """Full pipeline: parse + validate + merge."""
+    """Full pipeline: parse + validate + split bundles + merge."""
     raw = parse_bigseller(text)
     valid = validate_bigseller_data(raw)
-    merged = merge_duplicates(valid)
+    expanded = split_bundles(valid)
+    merged = merge_duplicates(expanded)
     merged.sort(key=lambda x: x["qty"], reverse=True)
     return merged
