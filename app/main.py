@@ -19,7 +19,7 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Rekap SKU PDF Scanner v2.0.0")
+        self.title("Rekap SKU PDF Scanner v2.1.0")
         self.geometry("950x700")
         self.minsize(850, 600)
 
@@ -45,7 +45,7 @@ class App(ctk.CTk):
 
         ctk.CTkLabel(
             header,
-            text="v2.0.0",
+            text="v2.1.0",
             font=ctk.CTkFont(size=12),
             text_color="gray",
         ).pack(side="left", padx=10)

@@ -1,6 +1,6 @@
 # Rekap SKU PDF Scanner
 
-**Version: 2.0.0**
+**Version: 2.1.0**
 
 Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, Nama, Quantity), mengelompokkan berdasarkan SKU, dan mengekspor hasil rekap ke Excel.
 
@@ -9,7 +9,7 @@ Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, N
 **Untuk user yang tidak paham coding, langsung download:**
 
 1. Buka [Releases](https://github.com/syahrilardiansyah/Rekap_SKU_PDF/releases)
-2. Download `RekapSKU-v2.0.0.zip`
+2. Download `RekapSKU-v2.1.0.zip`
 3. Extract ke sembarang folder
 4. Double-click `RekapSKU.exe`
 5. Langsung pakai - tidak perlu install apapun!
@@ -30,13 +30,13 @@ Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, N
 ## Fitur
 
 - **BigSeller Auto-Detect** — otomatis deteksi format PDF BigSeller
-- **Split Bundle** — bundle SKU otomatis di-split per komponen produk
+- **Split Bundle** — bundle SKU otomatis di-split per komponen produk (contoh: `BEACH+WATERMELON` → BEACH + WATERMELON)
 - **PDF Text Reader** — membaca PDF berbasis teks langsung
 - **OCR Engine** — membaca PDF scan/gambar via Tesseract OCR
 - **Configurable Parser** — regex pattern bisa disesuaikan dengan format PDF
 - **Rekap SKU** — mengelompokkan data dan menjumlahkan quantity per SKU
 - **Export Excel** — output ke file `.xlsx` dengan format rapi
-- **Remote Kill Switch** — kontrol akses via GitHub Gist
+- **Remote Kill Switch** — kontrol akses aplikasi dari jarak jauh via GitHub Gist
 
 ## Keamanan
 
@@ -53,6 +53,68 @@ Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, N
 - **Tidak ada data** yang dikirim ke server manapun
 - File PDF dan Excel tetap di komputer user
 - Windows SmartScreen mungkin warning karena EXE tidak di-sign certificate — klik "More info" → "Run anyway"
+
+## Remote Kill Switch
+
+Kill switch memungkinkan developer mengontrol akses aplikasi dari jarak jauh.
+
+### Cara Kerja
+
+- **Aplikasi user** mengecek status ke GitHub Gist setiap kali dibuka
+- **Developer** mengubah status via `admin.py` → semua user terdampak
+- **Tanpa internet** → app tetap jalan (menggunakan cache lokal)
+- **User tidak perlu akun GitHub** — hanya developer yang butuh
+
+### Kompatibilitas
+
+| Skenario | Hasil |
+|----------|-------|
+| Kill switch ON + internet | App jalan |
+| Kill switch OFF | App mati |
+| Kill switch ON + no internet (pertama kali) | App mati (perlu internet sekali saja) |
+| Kill switch ON + no internet (sudah pernah jalan) | App jalan (cache lokal) |
+| Kill switch ON, berpindah device | App jalan (asal ada internet pertama kali) |
+
+### Setup (Developer)
+
+1. Buat [GitHub Personal Access Token](https://github.com/settings/tokens)
+   - Scope: `gist`
+2. Buat [GitHub Gist](https://gist.github.com) baru (public)
+   - Filename: `kill_switch.json`
+   - Content:
+   ```json
+   {"active": true, "message": "", "shutdown_at": null}
+   ```
+3. Copy Gist ID dari URL
+4. Jalankan:
+   ```bash
+   python admin.py
+   ```
+5. Masukkan Gist ID dan Token saat diminta
+
+### Menu Admin
+
+```
+1. Lihat Status        - Cek status kill switch saat ini
+2. Toggle ON/OFF       - Aktifkan/nonaktifkan aplikasi
+3. Set Shutdown Jadwal  - Matikan aplikasi di waktu tertentu
+4. Update Config       - Ganti Gist ID atau Token
+0. Keluar
+```
+
+### Contoh Penggunaan
+
+**Matikan semua aplikasi user:**
+```
+Pilih: 2
+Status: OFF (Aplikasi mati)
+```
+
+**Hidupkan kembali:**
+```
+Pilih: 2
+Status: ON (Aplikasi aktif)
+```
 
 ## Tech Stack
 
@@ -136,53 +198,26 @@ Rekap_SKU_PDF/
     ├── bigseller_parser.py # Parser khusus format BigSeller
     ├── rekap.py            # Group by SKU + split bundle
     ├── export.py           # Export to Excel
-    └── kill_switch.py      # Remote shutdown
+    └── kill_switch.py      # Remote shutdown + cache
 ```
 
-## Admin Kill Switch
+## Changelog
 
-Untuk mengontrol kill switch (aktifkan/nonaktifkan aplikasi dari jarak jauh):
+### v2.1.0 (2026-09-10)
+- Fix: bypass GitHub CDN cache untuk kill switch (cache-busting)
+- Fix: self-destruct disabled di EXE mode
+- Add: local cache untuk kill switch (offline support)
+- Add: log file untuk debugging kill switch
 
-### Setup
-
-1. Buat [GitHub Personal Access Token](https://github.com/settings/tokens)
-   - Scope: `gist`
-2. Buat [GitHub Gist](https://gist.github.com) baru (public)
-   - Filename: `kill_switch.json`
-   - Content:
-   ```json
-   {"active": true, "message": "", "shutdown_at": null}
-   ```
-3. Copy Gist ID dari URL
-4. Jalankan:
-   ```bash
-   python admin.py
-   ```
-5. Masukkan Gist ID dan Token saat diminta
-
-### Menu Admin
-
-```
-1. Lihat Status        - Cek status kill switch saat ini
-2. Toggle ON/OFF       - Aktifkan/nonaktifkan aplikasi
-3. Set Shutdown Jadwal  - Matikan aplikasi di waktu tertentu
-4. Update Config       - Ganti Gist ID atau Token
-0. Keluar
-```
-
-### Contoh Penggunaan
-
-**Matikan semua aplikasi user:**
-```
-Pilih: 2
-Status: OFF (Aplikasi mati)
-```
-
-**Hidupkan kembali:**
-```
-Pilih: 2
-Status: ON (Aplikasi aktif)
-```
+### v2.0.0 (2026-09-09)
+- Add: BigSeller PDF format support
+- Add: Bundle splitting (BEACH+WATERMELON → BEACH + WATERMELON)
+- Add: New UI with row numbers, alternating colors, green qty
+- Add: Remote kill switch via GitHub Gist
+- Add: Admin CLI tool (`admin.py`)
+- Add: Auto-detect PDF format (BigSeller vs generic)
+- Add: EXE build script (`build.bat`)
+- Fix: Tesseract path detection for PyInstaller
 
 ## License
 
