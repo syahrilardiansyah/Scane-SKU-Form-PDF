@@ -14,7 +14,9 @@ Handles:
 - Freebie exclusion (Stickerpack, GelangCouple, Tester)
 """
 import re
+import sys
 from collections import defaultdict
+from pathlib import Path
 
 
 def is_order_code(line: str) -> bool:
@@ -82,20 +84,48 @@ def is_non_product_line(line: str) -> bool:
 
 def is_freebie_item(sku: str, nama: str) -> bool:
     """Cek apakah item adalah freebie/gift yang harus di-exclude."""
-    try:
-        from config import FREEBIE_KEYWORDS
-    except ImportError:
-        FREEBIE_KEYWORDS = ["stickerpack", "gelangcouple", "tester"]
-
+    keywords = _load_freebie_keywords()
     sku_lower = sku.lower()
     nama_lower = nama.lower()
 
-    for kw in FREEBIE_KEYWORDS:
+    for kw in keywords:
         kw_lower = kw.lower()
         if kw_lower in sku_lower or kw_lower in nama_lower:
             return True
 
     return False
+
+
+def _load_freebie_keywords() -> list[str]:
+    """Load freebie keywords dari file eksternal atau fallback ke default."""
+    default = ["stickerpack", "gelangcouple", "tester", "freebiest",
+               "free claim", "freegelang", "freesticker"]
+
+    # Cari file di folder yang sama dengan EXE atau source
+    if getattr(sys, 'frozen', False):
+        base = Path(sys.executable).parent
+    else:
+        base = Path(__file__).parent.parent
+
+    keywords_file = base / "freebie_keywords.txt"
+
+    if keywords_file.exists():
+        try:
+            with open(keywords_file, "r", encoding="utf-8") as f:
+                lines = [line.strip() for line in f if line.strip() and not line.startswith("#")]
+                if lines:
+                    return lines
+        except Exception:
+            pass
+
+    # Fallback ke config.py
+    try:
+        from config import FREEBIE_KEYWORDS
+        return FREEBIE_KEYWORDS
+    except ImportError:
+        pass
+
+    return default
 
 
 def _fix_line_wrapping(lines: list[str]) -> list[str]:

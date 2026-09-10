@@ -19,7 +19,7 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Rekap SKU PDF Scanner v2.1.0")
+        self.title("Rekap SKU PDF Scanner v2.1.1")
         self.geometry("950x700")
         self.minsize(850, 600)
 

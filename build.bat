@@ -86,6 +86,9 @@ for %%f in (
     )
 )
 
+:: Copy config files
+copy "freebie_keywords.txt" "dist\" >nul
+
 echo.
 echo ==========================================
 echo   BUILD BERHASIL!
