@@ -300,6 +300,9 @@ def parse_bigseller(text: str) -> list[dict]:
     return results
 
 
+_DONT_SPLIT = {"BUBBLEWRAP+KARDUS"}
+
+
 def split_bundles(data: list[dict]) -> list[dict]:
     """
     Split bundle SKU dan distribusi quantity ke masing-masing SKU.
@@ -309,10 +312,14 @@ def split_bundles(data: list[dict]) -> list[dict]:
     expanded = []
     for item in data:
         sku = item["sku"]
+
+        if sku.upper() in _DONT_SPLIT:
+            expanded.append(item)
+            continue
+
         parts = _split_bundle_sku(sku)
 
         if len(parts) > 1:
-            # It's a bundle - split to individual SKUs
             for part in parts:
                 expanded.append({
                     "sku": part,
@@ -320,22 +327,37 @@ def split_bundles(data: list[dict]) -> list[dict]:
                     "qty": item["qty"]
                 })
         else:
-            # Single SKU - keep as is
             expanded.append(item)
 
     return expanded
 
 
+_SKU_ALIASES = {
+    "DEEPCLEAN": "DeepClean",
+    "DEEPCLEAN1500GR": "DeepClean",
+    "LAP2": "LapMicrofiber2",
+    "LAPMICROFIBER2": "LapMicrofiber2",
+    "SPONS": "SponsRandom",
+    "SPONSRANDOM": "SponsRandom",
+}
+
+
 def merge_duplicates(data: list[dict]) -> list[dict]:
-    """Merge item dengan SKU yang sama (case-insensitive), jumlahkan quantity."""
+    """Merge item dengan SKU yang sama (case-insensitive + alias), jumlahkan quantity."""
     merged = {}
     for item in data:
         sku = item["sku"]
-        sku_key = sku.upper()  # Case-insensitive key
+        sku_key = sku.upper()
+        alias = _SKU_ALIASES.get(sku_key)
 
-        if sku_key not in merged:
-            merged[sku_key] = {"sku": sku, "nama": item["nama"], "qty": 0}
-        merged[sku_key]["qty"] += item["qty"]
+        if alias is not None:
+            merge_key = alias.upper()
+        else:
+            merge_key = sku_key
+
+        if merge_key not in merged:
+            merged[merge_key] = {"sku": alias or sku, "nama": item["nama"], "qty": 0}
+        merged[merge_key]["qty"] += item["qty"]
 
     return list(merged.values())
 
@@ -350,13 +372,13 @@ def validate_bigseller_data(data: list[dict]) -> list[dict]:
             continue
 
         # Skip non-product items
-        skip_skus = {"BUBBLEWRAP+KARDUS", "EXTRA PACKING WAJIB"}
+        skip_skus = {"EXTRA PACKING WAJIB"}
         if sku in skip_skus:
             continue
 
         # Skip by name keywords
         nama = item.get("nama", "").lower()
-        skip_keywords = ["extra packing", "bubblewrap", "kardus"]
+        skip_keywords = ["extra packing"]
         if any(kw in nama for kw in skip_keywords):
             continue
 
