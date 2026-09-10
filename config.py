@@ -33,6 +33,26 @@ OUTPUT_FILENAME = "hasil_rekap.xlsx"
 EXCEL_SHEET_NAME = "Rekap SKU"
 
 # ============================================================
+# FREEBIE ITEMS - Item yang di-exclude dari hasil rekap
+# ============================================================
+# SKU atau kata kunci produk yang merupakan freebie/gift
+# Contoh: Stickerpack, GelangCouple, Tester, dll
+FREEBIE_KEYWORDS = [
+    "stickerpack",
+    "sticker pack",
+    "gelangcouple",
+    "gelang couple",
+    "tester",
+    "freebiest",
+    "free claim",
+    "freegelang",
+    "freesticker",
+    "gift",
+    "bonus",
+    "hadiah",
+]
+
+# ============================================================
 # KILL SWITCH - Remote Shutdown via GitHub Gist
 # ============================================================
 # Cara setup:

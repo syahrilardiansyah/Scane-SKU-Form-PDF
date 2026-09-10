@@ -82,27 +82,17 @@ def is_non_product_line(line: str) -> bool:
 
 def is_freebie_item(sku: str, nama: str) -> bool:
     """Cek apakah item adalah freebie/gift yang harus di-exclude."""
+    try:
+        from config import FREEBIE_KEYWORDS
+    except ImportError:
+        FREEBIE_KEYWORDS = ["stickerpack", "gelangcouple", "tester"]
+
     sku_lower = sku.lower()
     nama_lower = nama.lower()
 
-    # Exclude by SKU name
-    freebie_skus = [
-        "stickerpack", "gelangcouple", "tester",
-        "freegelang", "freesticker", "freeclaim",
-        "gift", "bonus", "hadiah", "freebiest",
-    ]
-    for fb in freebie_skus:
-        if fb in sku_lower:
-            return True
-
-    # Exclude by product name
-    freebie_names = [
-        "sticker pack", "stickerpack", "gelang couple", "gelangcouple",
-        "freebiest", "free claim", "freebi", "tester",
-        "stiker", "gelang",
-    ]
-    for fn in freebie_names:
-        if fn in nama_lower:
+    for kw in FREEBIE_KEYWORDS:
+        kw_lower = kw.lower()
+        if kw_lower in sku_lower or kw_lower in nama_lower:
             return True
 
     return False
