@@ -197,6 +197,13 @@ def _split_bundle_sku(sku: str) -> list[str]:
     return [sku]
 
 
+def detect_bigseller_format(text: str) -> bool:
+    """Deteksi apakah teks berasal dari format BigSeller."""
+    markers = ["Default Shelf", "Informasi Produk", "Jumlah Paket"]
+    found = sum(1 for m in markers if m in text)
+    return found >= 2
+
+
 def parse_bigseller(text: str) -> list[dict]:
     """
     Parse teks PDF format BigSeller.
