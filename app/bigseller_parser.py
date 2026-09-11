@@ -204,7 +204,10 @@ def _split_bundle_sku(sku: str) -> list[str]:
     """
     Split bundle SKU menjadi individual SKUs.
     Contoh: "Allofme100mL+City100mL" → ["Allofme100mL", "City100mL"]
+    BUBBLEWRAP+KARDUS → ["BUBBLEWRAP+KARDUS"] (tidak dipecah)
     """
+    if sku.upper() in _DONT_SPLIT:
+        return [sku]
     if "+" in sku:
         parts = sku.split("+")
         return [p.strip() for p in parts if p.strip()]
