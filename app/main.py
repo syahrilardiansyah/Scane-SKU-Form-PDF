@@ -45,7 +45,7 @@ class App(ctk.CTk):
 
         ctk.CTkLabel(
             header,
-            text="v2.1.0",
+            text="v2.1.3",
             font=ctk.CTkFont(size=12),
             text_color="gray",
         ).pack(side="left", padx=10)
