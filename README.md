@@ -1,6 +1,6 @@
 # Rekap SKU PDF Scanner
 
-**Version: 2.1.0**
+**Version: 2.1.3**
 
 Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, Nama, Quantity), mengelompokkan berdasarkan SKU, dan mengekspor hasil rekap ke Excel.
 
@@ -9,7 +9,7 @@ Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, N
 **Untuk user yang tidak paham coding, langsung download:**
 
 1. Buka [Releases](https://github.com/syahrilardiansyah/Rekap_SKU_PDF/releases)
-2. Download `RekapSKU-v2.1.0.zip`
+2. Download `RekapSKU-v2.1.3.zip`
 3. Extract ke sembarang folder
 4. Double-click `RekapSKU.exe`
 5. Langsung pakai - tidak perlu install apapun!
@@ -31,6 +31,8 @@ Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, N
 
 - **BigSeller Auto-Detect** — otomatis deteksi format PDF BigSeller
 - **Split Bundle** — bundle SKU otomatis di-split per komponen produk (contoh: `BEACH+WATERMELON` → BEACH + WATERMELON)
+- **SKU Aliasing** — produk dengan nama berbeda digabung otomatis (contoh: `DeepClean` + `DeepClean1500gr` → DeepClean)
+- **Freebie Exclusion** — item freebie otomatis di-exclude dari hasil rekap (edit `freebie_keywords.txt` tanpa rebuild)
 - **PDF Text Reader** — membaca PDF berbasis teks langsung
 - **OCR Engine** — membaca PDF scan/gambar via Tesseract OCR
 - **Configurable Parser** — regex pattern bisa disesuaikan dengan format PDF
@@ -188,6 +190,7 @@ Rekap_SKU_PDF/
 ├── config.py               # Konfigurasi
 ├── admin.py                # Admin kill switch
 ├── build.bat               # Script build ke EXE
+├── freebie_keywords.txt    # Daftar keyword freebie (editable)
 ├── requirements.txt        # Dependencies
 ├── LICENSE                  # Lisensi
 └── app/
@@ -202,6 +205,22 @@ Rekap_SKU_PDF/
 ```
 
 ## Changelog
+
+### v2.1.3 (2026-09-11)
+- Add: SKU aliasing — `DeepClean`+`DeepClean1500gr`, `Lap2`+`LapMicrofiber2`, `Spons`+`SponsRandom` digabung otomatis
+- Add: `BUBBLEWRAP+KARDUS` tetap 1 row (tidak dipecah)
+- Add: Freebie keywords — Kamper, KawatCuci, SikatSudut auto-exclude
+- Fix: Line wrapping untuk SKU terpotong (`DeepClean1500gr+WATERMEL` + `ON` → `WATERMELON`)
+- Fix: Header UI version display
+
+### v2.1.2 (2026-09-11)
+- Fix: Hapus keyword "pengiriman" dari skip filter (salah exclude order legitimate)
+- Add: `tas` ke freebie keywords
+
+### v2.1.1 (2026-09-10)
+- Fix: Line wrapping guard — cegah product description (ada spasi) tidak salah di-join
+- Fix: Bundle split before freebie check
+- Add: `sticker` ke freebie keywords
 
 ### v2.1.0 (2026-09-10)
 - Fix: bypass GitHub CDN cache untuk kill switch (cache-busting)
