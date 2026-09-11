@@ -5,13 +5,17 @@ Mendukung mode normal (per SKU) dan mode split (per komponen produk).
 import pandas as pd
 
 
+_DONT_SPLIT = {"BUBBLEWRAP+KARDUS"}
+
+
 def _split_sku(sku: str) -> list[str]:
     """
     Split SKU menjadi komponen-komponen.
     "BEACH+WATERMELON" → ["BEACH", "WATERMELON"]
-    "BEACH" → ["BEACH"]
-    "DeepClean1500gr+BEACH+Spons" → ["DeepClean1500gr", "BEACH", "Spons"]
+    "BUBBLEWRAP+KARDUS" → ["BUBBLEWRAP+KARDUS"] (tidak dipecah)
     """
+    if sku.upper() in _DONT_SPLIT:
+        return [sku]
     return [s.strip() for s in sku.split("+") if s.strip()]
 
 
