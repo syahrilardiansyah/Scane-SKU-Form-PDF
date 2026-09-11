@@ -350,6 +350,8 @@ def split_bundles(data: list[dict]) -> list[dict]:
 
 
 _SKU_ALIASES = {
+    "CHARMKUNING": "CharmSilky",
+    "CHARMSILKY": "CharmSilky",
     "DEEPCLEAN": "DeepClean",
     "DEEPCLEAN1500GR": "DeepClean",
     "LAP2": "LapMicrofiber2",
