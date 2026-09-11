@@ -118,6 +118,13 @@ Pilih: 2
 Status: ON (Aplikasi aktif)
 ```
 
+## Freebie Keywords (editable)
+
+Edit `freebie_keywords.txt` — satu keyword per baris, `#` untuk komentar. Tidak perlu rebuild EXE.
+
+**Default keywords:**
+`stickerpack`, `sticker pack`, `sticker`, `gelangcouple`, `gelang couple`, `tester`, `freebiest`, `free claim`, `freegelang`, `freesticker`, `kamper`, `kawatcuci`, `sikatsudut`, `sikatmini`, `spondaki`, `jaring`, `sarungtangan`
+
 ## Tech Stack
 
 | Komponen | Library |
@@ -207,9 +214,9 @@ Rekap_SKU_PDF/
 ## Changelog
 
 ### v2.1.3 (2026-09-11)
-- Add: SKU aliasing — `DeepClean`+`DeepClean1500gr`, `Lap2`+`LapMicrofiber2`, `Spons`+`SponsRandom` digabung otomatis
+- Add: SKU aliasing — DeepClean+DeepClean1500gr, Lap2+LapMicrofiber2, Spons+SponsRandom, CharmKuning+CharmSilky
 - Add: `BUBBLEWRAP+KARDUS` tetap 1 row (tidak dipecah)
-- Add: Freebie keywords — Kamper, KawatCuci, SikatSudut auto-exclude
+- Add: Freebie — Kamper, KawatCuci, SikatSudut, SikatMini, SponDaki, Jaring, SarungTangan
 - Fix: Line wrapping untuk SKU terpotong (`DeepClean1500gr+WATERMEL` + `ON` → `WATERMELON`)
 - Fix: Header UI version display
 
