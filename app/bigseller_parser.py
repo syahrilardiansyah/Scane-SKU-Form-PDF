@@ -133,41 +133,55 @@ def _fix_line_wrapping(lines: list[str]) -> list[str]:
     Fix line wrapping issue.
     Contoh: "Allofme100mL+DeoPinkWonde" diikuti "r" → "Allofme100mL+DeoPinkWonder"
     Contoh: "PouchDetEmerald+PouchDetE" diikuti "merald" → "PouchDetEmerald+PouchDetEmerald"
-    Contoh: "DeepClean+Beach+Lap2+Spon" diikuti "s" → "DeepClean+Beach+Lap2+Spons"
+    Contoh: "DeepClean1500gr+WATERMEL" diikuti "ON" → "DeepClean1500gr+WATERMELON"
     """
     fixed = []
     i = 0
     while i < len(lines):
         line = lines[i].strip()
 
-        # Check if this looks like a truncated SKU (has +, next line is continuation)
-        # Must be a REAL SKU line (no spaces = compact code), not a product description
         if (i + 1 < len(lines)
                 and is_possible_sku(line)
                 and "+" in line
                 and " " not in line):
             next_line = lines[i + 1].strip()
-            # If next line looks like a continuation fragment (not a new SKU block)
+
             if (next_line
                     and len(next_line) <= 30
                     and is_possible_sku(next_line)
                     and not is_quantity_line(next_line)
                     and next_line not in ("Default Shelf", "--")):
-                # Don't join if next line is a FULL standalone SKU without +
-                # (i.e., next line has no + AND is followed by Default Shelf or --)
+                # Join if next line is lowercase continuation
                 if ("+" not in next_line
                         and not next_line[0].isupper()):
-                    # Lowercase start = likely continuation fragment, join
                     combined = line + next_line
                     fixed.append(combined)
                     i += 2
                     continue
                 elif "+" in next_line:
-                    # Has + = could be continuation of multi-SKU bundle, join
                     combined = line + next_line
                     fixed.append(combined)
                     i += 2
                     continue
+
+        # Handle truncated bundle: line ends with +PART, next line is short fragment
+        # e.g. "DeepClean1500gr+WATERMEL" + "ON" + "--"
+        if (i + 1 < len(lines)
+                and is_possible_sku(line)
+                and "+" in line
+                and " " not in line):
+            next_line = lines[i + 1].strip()
+            # Check if last part after + is short (truncated)
+            last_part = line.split("+")[-1]
+            if (next_line
+                    and len(last_part) <= 10
+                    and len(next_line) <= 10
+                    and not is_quantity_line(next_line)
+                    and next_line not in ("Default Shelf", "--")):
+                combined = line + next_line
+                fixed.append(combined)
+                i += 2
+                continue
 
         fixed.append(lines[i])
         i += 1
@@ -341,6 +355,7 @@ _SKU_ALIASES = {
     "LAP2": "LapMicrofiber2",
     "LAPMICROFIBER2": "LapMicrofiber2",
     "SPONS": "SponsRandom",
+    "SPONSR": "SponsRandom",
     "SPONSRANDOM": "SponsRandom",
 }
 
