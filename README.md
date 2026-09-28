@@ -1,6 +1,6 @@
 # Rekap SKU PDF Scanner
 
-**Version: 2.1.3**
+**Version: 2.1.4**
 
 Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, Nama, Quantity), mengelompokkan berdasarkan SKU, dan mengekspor hasil rekap ke Excel.
 
@@ -9,7 +9,7 @@ Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, N
 **Untuk user yang tidak paham coding, langsung download:**
 
 1. Buka [Releases](https://github.com/syahrilardiansyah/Rekap_SKU_PDF/releases)
-2. Download `RekapSKU-v2.1.3.zip`
+2. Download `RekapSKU-v2.1.4.zip`
 3. Extract ke sembarang folder
 4. Double-click `RekapSKU.exe`
 5. Langsung pakai - tidak perlu install apapun!
@@ -212,6 +212,9 @@ Rekap_SKU_PDF/
 ```
 
 ## Changelog
+
+### v2.1.4 (2026-09-28)
+- Fix: SKU alias — `Allfome100mL` digabung ke `Allofme100mL` (typo di PDF BigSeller)
 
 ### v2.1.3 (2026-09-11)
 - Add: SKU aliasing — DeepClean+DeepClean1500gr, Lap2+LapMicrofiber2, Spons+SponsRandom, CharmKuning+CharmSilky
