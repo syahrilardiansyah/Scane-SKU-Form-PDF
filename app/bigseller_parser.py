@@ -25,8 +25,16 @@ def is_order_code(line: str) -> bool:
 
 
 def is_quantity_line(line: str) -> bool:
-    """Cek apakah baris hanya berisi angka (quantity)."""
-    return bool(re.match(r"^\d+$", line.strip()))
+    """Cek apakah baris hanya berisi angka (boleh pakai pemisah ribuan `.` atau `,`)."""
+    s = line.strip()
+    if re.match(r"^\d+$", s):
+        return True
+    return bool(re.match(r"^\d{1,3}(?:[.,]\d{3})+$", s))
+
+
+def to_quantity(line: str) -> int:
+    """Konversi baris quantity jadi int (buang pemisah ribuan)."""
+    return int(line.strip().replace(".", "").replace(",", ""))
 
 
 def is_possible_sku(line: str) -> bool:
@@ -278,7 +286,7 @@ def parse_bigseller(text: str) -> list[dict]:
         # Regular product: SKU, Default Shelf, Quantity
         if next_line == "Default Shelf":
             if i + 2 < n and is_quantity_line(lines[i + 2].strip()):
-                qty = int(lines[i + 2].strip())
+                qty = to_quantity(lines[i + 2])
                 name_lines = _collect_name_before(lines, i)
                 nama = " ".join(name_lines) if name_lines else sku_candidate
                 results.append({"sku": sku_candidate, "nama": nama, "qty": qty})
@@ -288,7 +296,7 @@ def parse_bigseller(text: str) -> list[dict]:
         # Bundle product: SKU, --, Quantity
         elif next_line == "--":
             if i + 2 < n and is_quantity_line(lines[i + 2].strip()):
-                qty = int(lines[i + 2].strip())
+                qty = to_quantity(lines[i + 2])
                 name_lines = _collect_name_before(lines, i)
                 nama = " ".join(name_lines) if name_lines else sku_candidate
                 results.append({"sku": sku_candidate, "nama": nama, "qty": qty})
@@ -297,7 +305,7 @@ def parse_bigseller(text: str) -> list[dict]:
 
         # Bundle product: SKU --, Quantity (bundle marker on same line as SKU)
         elif is_quantity_line(next_line) and "+" in sku_candidate:
-            qty = int(next_line)
+            qty = to_quantity(next_line)
             name_lines = _collect_name_before(lines, i)
             nama = " ".join(name_lines) if name_lines else sku_candidate
             results.append({"sku": sku_candidate, "nama": nama, "qty": qty})
