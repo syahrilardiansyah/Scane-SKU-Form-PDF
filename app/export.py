@@ -22,12 +22,19 @@ def export_to_excel(data: list[dict], output_path: str = None) -> str:
     if output_path is None:
         output_path = OUTPUT_FILENAME
 
-    # Konversi ke DataFrame
+    # Konversi ke DataFrame (kontrak: SKU, Total Quantity, Breakdown)
+    columns = ["SKU", "Total Quantity", "Breakdown"]
     if data:
-        df = pd.DataFrame(data)
-        df.columns = ["SKU", "Nama Produk", "Total Quantity"]
+        df = pd.DataFrame([
+            {
+                "SKU": item.get("SKU", item.get("sku", "")),
+                "Total Quantity": item.get("Total Quantity", item.get("total_qty", 0)),
+                "Breakdown": item.get("Breakdown", item.get("breakdown", "")) or "",
+            }
+            for item in data
+        ])
     else:
-        df = pd.DataFrame(columns=["SKU", "Nama Produk", "Total Quantity"])
+        df = pd.DataFrame(columns=columns)
 
     # Write ke Excel
     with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
@@ -64,11 +71,13 @@ def _format_worksheet(ws, data_rows: int):
     for row in ws.iter_rows(min_row=2, max_row=data_rows + 1, max_col=3):
         for cell in row:
             cell.border = thin_border
-            # Qty column (kolom 3) rata kanan
-            if cell.column == 3:
+            # Qty column (kolom 2) rata kanan, sisanya rata kiri
+            if cell.column == 2:
                 cell.alignment = Alignment(horizontal="right")
+            else:
+                cell.alignment = Alignment(horizontal="left")
 
-    # Auto-width columns
+    # Auto-width columns (dibatasi biar kolom Breakdown nggak kepanjangan)
     for col in ws.columns:
         max_length = 0
         col_letter = col[0].column_letter
@@ -78,4 +87,4 @@ def _format_worksheet(ws, data_rows: int):
                     max_length = max(max_length, len(str(cell.value)))
             except Exception:
                 pass
-        ws.column_dimensions[col_letter].width = max_length + 3
+        ws.column_dimensions[col_letter].width = min(max_length + 3, 60)

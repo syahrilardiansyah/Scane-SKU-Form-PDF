@@ -4,6 +4,8 @@ Mendukung mode normal (per SKU) dan mode split (per komponen produk).
 """
 import pandas as pd
 
+from app.sku_group import combine_groups
+
 
 _DONT_SPLIT = {"BUBBLEWRAP+KARDUS"}
 
@@ -64,10 +66,13 @@ def rekap_sku(data: list[dict], split_bundles: bool = True) -> list[dict]:
     grouped = df.groupby("sku", as_index=False)["qty"].sum()
     grouped.columns = ["sku", "total_qty"]
 
-    # Sort by total_qty descending
-    grouped = grouped.sort_values("total_qty", ascending=False)
+    # Gabungkan SKU multi-PCS (BodyMask1/2/3 -> BodyMask)
+    records = combine_groups(grouped.to_dict("records"))
 
-    return grouped.to_dict("records")
+    # Sort by total_qty descending
+    records.sort(key=lambda r: r.get("total_qty", 0), reverse=True)
+
+    return records
 
 
 def rekap_to_dataframe(data: list[dict], split_bundles: bool = True) -> pd.DataFrame:
@@ -76,8 +81,12 @@ def rekap_to_dataframe(data: list[dict], split_bundles: bool = True) -> pd.DataF
     """
     rekap = rekap_sku(data, split_bundles=split_bundles)
     if not rekap:
-        return pd.DataFrame(columns=["SKU", "Total Quantity"])
+        return pd.DataFrame(columns=["SKU", "Total Quantity", "Breakdown"])
 
     df = pd.DataFrame(rekap)
-    df.columns = ["SKU", "Total Quantity"]
+    if "breakdown" not in df.columns:
+        df["breakdown"] = ""
+    df["breakdown"] = df["breakdown"].fillna("")
+    df = df[["sku", "total_qty", "breakdown"]]
+    df.columns = ["SKU", "Total Quantity", "Breakdown"]
     return df

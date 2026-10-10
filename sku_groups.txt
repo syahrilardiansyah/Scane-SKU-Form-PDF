@@ -1,0 +1,12 @@
+# Konfigurasi gabung SKU multi-PCS jadi satu baris.
+# Format:
+#   NamaHasil = AngkaSKU*multiplier, AngkaSKU*multiplier, ...
+#
+# multiplier = jumlah isi per 1 order (angka suffix SKU).
+# Pencocokan tidak membedakan huruf besar/kecil.
+# Baris diawali # = komentar. Edit file ini tanpa perlu rebuild EXE.
+#
+# Contoh: 10 order BodyMask1 + 4 order BodyMask2 (isi 2) + 2 order BodyMask3 (isi 3)
+#          => BodyMask = 10 + 4*2 + 2*3 = 24
+
+BodyMask = BodyMask1*1, BodyMask2*2, BodyMask3*3
