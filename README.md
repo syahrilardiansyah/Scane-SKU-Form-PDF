@@ -1,6 +1,6 @@
 # Rekap SKU PDF Scanner
 
-**Version: 2.1.4**
+**Version: 2.1.5**
 
 Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, Nama, Quantity), mengelompokkan berdasarkan SKU, dan mengekspor hasil rekap ke Excel.
 
@@ -9,7 +9,7 @@ Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, N
 **Untuk user yang tidak paham coding, langsung download:**
 
 1. Buka [Releases](https://github.com/syahrilardiansyah/Rekap_SKU_PDF/releases)
-2. Download `RekapSKU-v2.1.4.zip`
+2. Download `RekapSKU-v2.1.5.zip`
 3. Extract ke sembarang folder
 4. Double-click `RekapSKU.exe`
 5. Langsung pakai - tidak perlu install apapun!
@@ -122,6 +122,8 @@ Status: ON (Aplikasi aktif)
 
 Edit `freebie_keywords.txt` — satu keyword per baris, `#` untuk komentar. Tidak perlu rebuild EXE.
 
+**Pencocokan hanya ke kolom SKU** (bukan nama/deskripsi produk), supaya produk legit yang kebetulan menyebut freebie di deskripsinya (contoh: `Laundry Bag ... Jaring Baju Kotor`) tidak salah di-exclude. Konsekuensinya keyword yang mengandung spasi (`sticker pack`, `gelang couple`, `free claim`) tidak akan pernah cocok karena SKU tidak punya spasi — pakai versi tanpa spasi (`stickerpack`, `gelangcouple`).
+
 **Default keywords:**
 `stickerpack`, `sticker pack`, `sticker`, `gelangcouple`, `gelang couple`, `tester`, `freebiest`, `free claim`, `freegelang`, `freesticker`, `kamper`, `kawatcuci`, `sikatsudut`, `sikatmini`, `spondaki`, `jaring`, `sarungtangan`
 
@@ -212,6 +214,11 @@ Rekap_SKU_PDF/
 ```
 
 ## Changelog
+
+### v2.1.5 (2026-10-10)
+- Fix: SKU bundle yang kepotong line-wrap menghasilkan baris palsu (`L`, `mL`, `ns`) — sekarang di-join lewat anchor shelf marker
+- Fix: Freebie keyword hanya dicocokkan ke kolom SKU (bukan nama produk) — `LaundryBag40x50CM`, `City100mL`, `Allofme100mL` salah ke-exclude karena deskripsi marketing
+- Verified: `SHP PH 10-10-2026.pdf` parse mentah = 39 SKU / 971 unit, cocok persis dengan header PDF
 
 ### v2.1.4 (2026-09-28)
 - Fix: SKU alias — `Allfome100mL` digabung ke `Allofme100mL` (typo di PDF BigSeller)

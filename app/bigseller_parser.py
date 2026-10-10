@@ -83,14 +83,17 @@ def is_non_product_line(line: str) -> bool:
 
 
 def is_freebie_item(sku: str, nama: str) -> bool:
-    """Cek apakah item adalah freebie/gift yang harus di-exclude."""
+    """Cek apakah item adalah freebie/gift yang harus di-exclude.
+
+    Keyword hanya dicocokkan ke SKU, bukan ke nama produk.
+    Nama produk sering menyebut freebie di deskripsi marketing
+    (contoh: "Free Crystal Sticker") padahal produknya legit.
+    """
     keywords = _load_freebie_keywords()
     sku_lower = sku.lower()
-    nama_lower = nama.lower()
 
     for kw in keywords:
-        kw_lower = kw.lower()
-        if kw_lower in sku_lower or kw_lower in nama_lower:
+        if kw.lower() in sku_lower:
             return True
 
     return False
@@ -130,62 +133,51 @@ def _load_freebie_keywords() -> list[str]:
 
 def _fix_line_wrapping(lines: list[str]) -> list[str]:
     """
-    Fix line wrapping issue.
-    Contoh: "Allofme100mL+DeoPinkWonde" diikuti "r" → "Allofme100mL+DeoPinkWonder"
-    Contoh: "PouchDetEmerald+PouchDetE" diikuti "merald" → "PouchDetEmerald+PouchDetEmerald"
-    Contoh: "DeepClean1500gr+WATERMEL" diikuti "ON" → "DeepClean1500gr+WATERMELON"
+    Gabungkan SKU yang terpotong line-wrapping.
+
+    Pola di PDF BigSeller:
+        Lily250mL+CottonBlanket250m
+        L
+        --
+
+    Baris SKU selalu ditutup shelf marker ("--" / "Default Shelf"),
+    jadi kita anchor dari situ: kumpulkan baris ke atas selama tanpa
+    spasi (nama produk selalu punya spasi), lalu gabung jadi satu.
     """
-    fixed = []
+    shelf_markers = ("Default Shelf", "--")
+    joins = {}    # indeks awal SKU -> string gabungan
+    skip = set()  # indeks fragment sisanya
+
     i = 0
     while i < len(lines):
-        line = lines[i].strip()
+        if lines[i].strip() in shelf_markers:
+            j = i - 1
+            block = []  # (indeks, teks), diurutkan dari atas
+            while j >= 0:
+                s = lines[j].strip()
+                if not s or " " in s or not is_possible_sku(s):
+                    break
+                block.insert(0, (j, s))
+                j -= 1
 
-        if (i + 1 < len(lines)
-                and is_possible_sku(line)
-                and "+" in line
-                and " " not in line):
-            next_line = lines[i + 1].strip()
-
-            if (next_line
-                    and len(next_line) <= 30
-                    and is_possible_sku(next_line)
-                    and not is_quantity_line(next_line)
-                    and next_line not in ("Default Shelf", "--")):
-                # Join if next line is lowercase continuation
-                if ("+" not in next_line
-                        and not next_line[0].isupper()):
-                    combined = line + next_line
-                    fixed.append(combined)
-                    i += 2
-                    continue
-                elif "+" in next_line:
-                    combined = line + next_line
-                    fixed.append(combined)
-                    i += 2
-                    continue
-
-        # Handle truncated bundle: line ends with +PART, next line is short fragment
-        # e.g. "DeepClean1500gr+WATERMEL" + "ON" + "--"
-        if (i + 1 < len(lines)
-                and is_possible_sku(line)
-                and "+" in line
-                and " " not in line):
-            next_line = lines[i + 1].strip()
-            # Check if last part after + is short (truncated)
-            last_part = line.split("+")[-1]
-            if (next_line
-                    and len(last_part) <= 10
-                    and len(next_line) <= 10
-                    and not is_quantity_line(next_line)
-                    and next_line not in ("Default Shelf", "--")):
-                combined = line + next_line
-                fixed.append(combined)
-                i += 2
-                continue
-
-        fixed.append(lines[i])
+            if len(block) > 1:
+                # Potong dari atas: kata terakhir product name (contoh
+                # "Spons", "Deskripsi") ikut ke-block karena tanpa spasi.
+                # SKU bundle selalu mengandung "+", jadi mulai dari baris
+                # "+" pertama dari atas.
+                plus = [k for k, (_, t) in enumerate(block) if "+" in t]
+                if plus:
+                    sku_block = block[plus[0]:]
+                    if len(sku_block) > 1:
+                        joins[sku_block[0][0]] = "".join(t for _, t in sku_block)
+                        skip.update(idx for idx, _ in sku_block[1:])
         i += 1
 
+    fixed = []
+    for idx, line in enumerate(lines):
+        if idx in skip:
+            continue
+        fixed.append(joins.get(idx, line))
     return fixed
 
 
