@@ -390,10 +390,11 @@ def validate_bigseller_data(data: list[dict]) -> list[dict]:
         if sku in skip_skus:
             continue
 
-        # Skip by name keywords
+        # Skip by name keywords (SKU material packing tetap dihitung)
         nama = item.get("nama", "").lower()
         skip_keywords = ["extra packing"]
-        if any(kw in nama for kw in skip_keywords):
+        is_packaging_sku = any(k in sku.upper() for k in ("BUBBLEWRAP", "KARDUS"))
+        if not is_packaging_sku and any(kw in nama for kw in skip_keywords):
             continue
 
         # Skip freebie items
