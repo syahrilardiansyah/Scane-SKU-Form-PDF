@@ -10,3 +10,4 @@
 #          => BodyMask = 10 + 4*2 + 2*3 = 24
 
 BodyMask = BodyMask1*1, BodyMask2*2, BodyMask3*3
+BodyLotion = BodyLotion1*1, BodyLotion2*2

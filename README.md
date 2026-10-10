@@ -1,6 +1,6 @@
 # Rekap SKU PDF Scanner
 
-**Version: 2.1.6**
+**Version: 2.1.7**
 
 Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, Nama, Quantity), mengelompokkan berdasarkan SKU, dan mengekspor hasil rekap ke Excel.
 
@@ -9,7 +9,7 @@ Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, N
 **Untuk user yang tidak paham coding, langsung download:**
 
 1. Buka [Releases](https://github.com/syahrilardiansyah/Rekap_SKU_PDF/releases)
-2. Download `RekapSKU-v2.1.6.zip`
+2. Download `RekapSKU-v2.1.7.zip`
 3. Extract ke sembarang folder
 4. Double-click `RekapSKU.exe`
 5. Langsung pakai - tidak perlu install apapun!
@@ -33,7 +33,7 @@ Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, N
 - **Split Bundle** — bundle SKU otomatis di-split per komponen produk (contoh: `BEACH+WATERMELON` → BEACH + WATERMELON)
 - **SKU Aliasing** — produk dengan nama berbeda digabung otomatis (contoh: `DeepClean` + `DeepClean1500gr` → DeepClean)
 - **Freebie Exclusion** — item freebie otomatis di-exclude dari hasil rekap (edit `freebie_keywords.txt` tanpa rebuild)
-- **Gabung SKU Multi-PCS** — SKU isi banyak pcs digabung jadi 1 baris, `BodyMask1 + BodyMask2*2 + BodyMask3*3` → `BodyMask` (edit `sku_groups.txt` tanpa rebuild)
+- **Gabung SKU Multi-PCS** — SKU isi banyak pcs digabung jadi 1 baris, `BodyMask1*1 + BodyMask2*2 + BodyMask3*3` → `BodyMask` (edit `sku_groups.txt` tanpa rebuild)
 - **PDF Text Reader** — membaca PDF berbasis teks langsung
 - **OCR Engine** — membaca PDF scan/gambar via Tesseract OCR
 - **Configurable Parser** — regex pattern bisa disesuaikan dengan format PDF
@@ -126,7 +126,7 @@ Edit `freebie_keywords.txt` — satu keyword per baris, `#` untuk komentar. Tida
 **Pencocokan hanya ke kolom SKU** (bukan nama/deskripsi produk), supaya produk legit yang kebetulan menyebut freebie di deskripsinya (contoh: `Laundry Bag ... Jaring Baju Kotor`) tidak salah di-exclude. Konsekuensinya keyword yang mengandung spasi (`sticker pack`, `gelang couple`, `free claim`) tidak akan pernah cocok karena SKU tidak punya spasi — pakai versi tanpa spasi (`stickerpack`, `gelangcouple`).
 
 **Default keywords:**
-`stickerpack`, `sticker pack`, `sticker`, `gelangcouple`, `gelang couple`, `tester`, `freebiest`, `free claim`, `freegelang`, `freesticker`, `kamper`, `kawatcuci`, `sikatsudut`, `sikatmini`, `spondaki`, `jaring`, `sarungtangan`
+`stickerpack`, `sticker pack`, `sticker`, `gelangcouple`, `gelang couple`, `tester`, `freebiest`, `free claim`, `freegelang`, `freesticker`, `kamper`, `kawatcuci`, `sikatsudut`, `sikatmini`, `spondaki`, `jaring`, `sarungtangan`, `glove`, `sponmandi`
 
 ## Gabung SKU Multi-PCS (editable)
 
@@ -134,9 +134,10 @@ SKU yang isinya lebih dari 1 pcs dijual terpisah dengan suffix angka. Contoh di 
 
 ```
 BodyMask = BodyMask1*1, BodyMask2*2, BodyMask3*3
+BodyLotion = BodyLotion1*1, BodyLotion2*2
 ```
 
-Artinya: `BodyMask` = `BodyMask1`×1 + `BodyMask2`×2 + `BodyMask3`×3.
+Artinya: `BodyMask` = `BodyMask1`×1 + `BodyMask2`×2 + `BodyMask3`×3, dan `BodyLotion` = `BodyLotion1`×1 + `BodyLotion2`×2.
 
 Contoh konkret (10 order `BodyMask1` + 4 order `BodyMask2` isi 2 + 2 order `BodyMask3` isi 3):
 
@@ -146,7 +147,7 @@ BodyMask = 10 + 4*2 + 2*3 = 24
 
 - Satu baris per grup, format `NamaHasil = AngkaSKU*multiplier, ...`
 - Pencocokan **tidak membedakan huruf besar/kecil** (`BODYMASK1` = `BodyMask1`)
-- Baris `BodyMask1/2/3` **diganti** jadi 1 baris `BodyMask` di tabel & Excel
+- Baris anggota grup (`BodyMask1/2/3`, `BodyLotion1/2`) **diganti** jadi 1 baris hasil gabungan di tabel & Excel
 - Kolom `Breakdown` di Excel berisi cara hitungnya, mis. `BodyMask1 (64x1) + BodyMask2 (7x2) + BodyMask3 (7x3)`
 - `#` untuk komentar, edit tanpa rebuild EXE
 - Grup yang tidak dipakai di file tersebut tetap aman — kalau anggotanya nggak ada, barisnya cuma dilewat
@@ -240,6 +241,11 @@ Rekap_SKU_PDF/
 ```
 
 ## Changelog
+
+### v2.1.7 (2026-10-10)
+- Add: Grup `BodyLotion = BodyLotion1*1 + BodyLotion2*2` (aturan sama dengan BodyMask)
+- Add: Freebie keyword `glove`, `sponmandi` — `S FOBB` 163 → 155 (Glove 3 + SponMandi 5 ke-exclude), 22 file lain tidak berubah
+- Note: perubahan murni config (`sku_groups.txt` + `freebie_keywords.txt`), tanpa ubah kode
 
 ### v2.1.6 (2026-10-10)
 - Add: Gabung SKU multi-PCS — `sku_groups.txt` (default `BodyMask1*1 + BodyMask2*2 + BodyMask3*3` → `BodyMask`), edit tanpa rebuild
