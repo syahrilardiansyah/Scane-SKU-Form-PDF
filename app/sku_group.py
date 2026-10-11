@@ -61,25 +61,21 @@ def load_groups() -> dict[str, list[tuple[str, int]]]:
     return _parse(text)
 
 
-def _owner_of(sku_upper: str, groups: dict) -> str | None:
-    """SKU ini anggota grup mana? (None kalau bukan anggota grup manapun)."""
-    for name, members in groups.items():
-        for member, _ in members:
-            if member.upper() == sku_upper:
-                return name
-    return None
-
-
 def combine_groups(rows: list[dict]) -> list[dict]:
     """
     Gabungkan baris hasil groupby sesuai konfigurasi grup.
+
+    Lebih dari satu grup boleh memakai SKU anggota yang sama, contoh:
+      LapMicrofiber = LapMicrofiber2*2
+      BoxMicrofiber = LapMicrofiber2*1
+    keduanya dihitung dari baris LapMicrofiber2 yang sama.
 
     Args:
         rows: [{"sku": ..., "total_qty": int}, ...]
 
     Returns:
-        List yang sama, tapi baris anggota grup diganti 1 baris gabungan
-        berisi qty total x multiplier + field "breakdown" cara hitungnya.
+        Baris anggota grup diganti baris hasil gabungan (qty x multiplier +
+        field "breakdown"), baris lain tetap.
     """
     if not rows:
         return rows
@@ -88,55 +84,45 @@ def combine_groups(rows: list[dict]) -> list[dict]:
     if not groups:
         return rows
 
-    by_upper: dict[str, dict] = {}
-    for row in rows:
-        by_upper[str(row.get("sku", "")).upper()] = row
-
-    # Baris yang namanya persis nama grup dianggap anggota tambahan (x1)
+    member_skus = {m.upper() for members in groups.values() for m, _ in members}
     group_names = {name.upper() for name in groups}
-    extras: dict[str, int] = {}
-    for name in group_names:
-        row = by_upper.get(name)
-        if row:
-            extras[name] = int(row.get("total_qty", 0) or 0)
+
+    member_qty: dict[str, int] = {}
+    extra_qty: dict[str, int] = {}
+    others: list[dict] = []
+
+    for row in rows:
+        sku_upper = str(row.get("sku", "")).upper()
+        qty = int(row.get("total_qty", 0) or 0)
+        if sku_upper in member_skus:
+            member_qty[sku_upper] = member_qty.get(sku_upper, 0) + qty
+        elif sku_upper in group_names:
+            extra_qty[sku_upper] = extra_qty.get(sku_upper, 0) + qty
+        else:
+            others.append(row)
 
     out: list[dict] = []
-    emitted: set[str] = set()
-
-    for row in rows:
-        sku = str(row.get("sku", ""))
-        sku_upper = sku.upper()
-        owner = _owner_of(sku_upper, groups)
-
-        if owner is None:
-            if sku_upper not in group_names:
-                out.append(row)
-            continue
-
-        if owner.upper() in emitted:
-            continue
-        emitted.add(owner.upper())
-
+    for name, members in groups.items():
         parts: list[str] = []
         total = 0
-        for member, multiplier in groups[owner]:
-            member_row = by_upper.get(member.upper())
-            if not member_row:
-                continue
-            qty = int(member_row.get("total_qty", 0) or 0)
+        for member, multiplier in members:
+            qty = member_qty.get(member.upper(), 0)
             if qty <= 0:
                 continue
             total += qty * multiplier
             parts.append(f"{member} ({qty}x{multiplier})")
 
-        extra_qty = extras.get(owner.upper(), 0)
-        if extra_qty:
-            total += extra_qty
-            parts.append(f"{owner} ({extra_qty}x1)")
+        bonus = extra_qty.get(name.upper(), 0)
+        if bonus:
+            total += bonus
+            parts.append(f"{name} ({bonus}x1)")
 
-        if not parts:
-            continue
+        if parts:
+            out.append({
+                "sku": name,
+                "total_qty": total,
+                "breakdown": " + ".join(parts),
+            })
 
-        out.append({"sku": owner, "total_qty": total, "breakdown": " + ".join(parts)})
-
+    out.extend(others)
     return out

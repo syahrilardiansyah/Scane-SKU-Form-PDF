@@ -1,6 +1,6 @@
 ﻿# Rekap SKU PDF Scanner
 
-**Version: 2.1.9**
+**Version: 2.1.10**
 
 Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, Nama, Quantity), mengelompokkan berdasarkan SKU, dan mengekspor hasil rekap ke Excel.
 
@@ -9,7 +9,7 @@ Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, N
 **Untuk user yang tidak paham coding, langsung download:**
 
 1. Buka [Releases](https://github.com/syahrilardiansyah/Rekap_SKU_PDF/releases)
-2. Download `RekapSKU-v2.1.9.zip`
+2. Download `RekapSKU-v2.1.10.zip`
 3. Extract ke sembarang folder
 4. Double-click `RekapSKU.exe`
 5. Langsung pakai - tidak perlu install apapun!
@@ -135,9 +135,18 @@ SKU yang isinya lebih dari 1 pcs dijual terpisah dengan suffix angka. Contoh di 
 ```
 BodyMask = BodyMask1*1, BodyMask2*2, BodyMask3*3
 BodyLotion = BodyLotion1*1, BodyLotion2*2
+LapMicrofiber = LapMicrofiber2*2
+BoxMicrofiber = LapMicrofiber2*1
 ```
 
 Artinya: `BodyMask` = `BodyMask1`×1 + `BodyMask2`×2 + `BodyMask3`×3, dan `BodyLotion` = `BodyLotion1`×1 + `BodyLotion2`×2.
+
+**Satu SKU anggota boleh dipakai lebih dari satu grup** — `LapMicrofiber2` dipakai dua kali: `LapMicrofiber` (isi 2 → ×2) dan `BoxMicrofiber` (1 box per pack → ×1). Contoh 9 pack `LapMicrofiber2`:
+
+```
+LapMicrofiber   = 9 x 2 = 18
+BoxMicrofiber   = 9 x 1 = 9
+```
 
 Contoh konkret (10 order `BodyMask1` + 4 order `BodyMask2` isi 2 + 2 order `BodyMask3` isi 3):
 
@@ -147,7 +156,7 @@ BodyMask = 10 + 4*2 + 2*3 = 24
 
 - Satu baris per grup, format `NamaHasil = AngkaSKU*multiplier, ...`
 - Pencocokan **tidak membedakan huruf besar/kecil** (`BODYMASK1` = `BodyMask1`)
-- Baris anggota grup (`BodyMask1/2/3`, `BodyLotion1/2`) **diganti** jadi 1 baris hasil gabungan di tabel & Excel
+- Baris anggota grup (`BodyMask1/2/3`, `BodyLotion1/2`, `LapMicrofiber2`) **diganti** jadi 1 baris hasil gabungan di tabel & Excel
 - Kolom `Breakdown` di Excel berisi cara hitungnya, mis. `BodyMask1 (64x1) + BodyMask2 (7x2) + BodyMask3 (7x3)`
 - `#` untuk komentar, edit tanpa rebuild EXE
 - Grup yang tidak dipakai di file tersebut tetap aman — kalau anggotanya nggak ada, barisnya cuma dilewat
@@ -241,6 +250,11 @@ Rekap_SKU_PDF/
 ```
 
 ## Changelog
+
+### v2.1.10 (2026-10-10)
+- Add: Grup `LapMicrofiber = LapMicrofiber2*2` + baris turunan `BoxMicrofiber = LapMicrofiber2*1` (1 box per pack)
+- Add: Satu SKU anggota boleh dipakai banyak grup (sebelumnya cuma boleh satu grup per SKU)
+- Verified: `TT WF JNT 10-10-2026.pdf` → `LapMicrofiber` 18, `BoxMicrofiber` 9; 6 file lain berubah (semua berisi `LapMicrofiber2`), 17 file tidak berubah
 
 ### v2.1.9 (2026-10-10)
 - Fix: Quantity dengan pemisah ribuan (`2.839`) tidak dikenali → baris SKU hilang; `TT PB NEW.pdf` cuma kebaca 262, sekarang parse mentah 3012 (persis header "Jumlah Produk: 3.012")
