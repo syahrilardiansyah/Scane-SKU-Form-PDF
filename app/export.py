@@ -13,7 +13,8 @@ def export_to_excel(data: list[dict], output_path: str = None) -> str:
     Export data rekap ke file Excel.
 
     Args:
-        data: List of dict dari rekap [{"sku": "...", "nama": "...", "total_qty": int}, ...]
+        data: List of dict dari rekap [{"sku": "...", "total_qty": int, "breakdown": "..."}, ...]
+             atau record hasil rekap_to_dataframe ({"SKU": ..., "Total Quantity": ..., ...})
         output_path: Path file output (default: hasil_rekap.xlsx)
 
     Returns:
@@ -22,8 +23,7 @@ def export_to_excel(data: list[dict], output_path: str = None) -> str:
     if output_path is None:
         output_path = OUTPUT_FILENAME
 
-    # Konversi ke DataFrame (kontrak: SKU, Total Quantity, Breakdown)
-    columns = ["SKU", "Total Quantity", "Breakdown"]
+    # Kontrak kolom: SKU, Total Quantity, Breakdown
     if data:
         df = pd.DataFrame([
             {
@@ -34,7 +34,7 @@ def export_to_excel(data: list[dict], output_path: str = None) -> str:
             for item in data
         ])
     else:
-        df = pd.DataFrame(columns=columns)
+        df = pd.DataFrame(columns=["SKU", "Total Quantity", "Breakdown"])
 
     # Write ke Excel
     with pd.ExcelWriter(output_path, engine="openpyxl") as writer:

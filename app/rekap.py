@@ -4,43 +4,8 @@ Mendukung mode normal (per SKU) dan mode split (per komponen produk).
 """
 import pandas as pd
 
+from app import bigseller_parser
 from app.sku_group import combine_groups
-
-
-_DONT_SPLIT = {"BUBBLEWRAP+KARDUS"}
-
-
-def _split_sku(sku: str) -> list[str]:
-    """
-    Split SKU menjadi komponen-komponen.
-    "BEACH+WATERMELON" → ["BEACH", "WATERMELON"]
-    "BUBBLEWRAP+KARDUS" → ["BUBBLEWRAP+KARDUS"] (tidak dipecah)
-    """
-    if sku.upper() in _DONT_SPLIT:
-        return [sku]
-    return [s.strip() for s in sku.split("+") if s.strip()]
-
-
-def _expand_by_component(data: list[dict]) -> list[dict]:
-    """
-    Expand bundle SKU menjadi item per komponen.
-    "BEACH+WATERMELON" qty=2 → BEACH qty=2, WATERMELON qty=2
-    """
-    expanded = []
-    for item in data:
-        sku = item.get("sku", "")
-        qty = item.get("qty", 0)
-        nama = item.get("nama", "")
-
-        components = _split_sku(sku)
-        if len(components) == 1:
-            # Single SKU, langsung tambah
-            expanded.append({"sku": sku, "nama": nama, "qty": qty})
-        else:
-            # Bundle SKU, expand per komponen
-            for comp in components:
-                expanded.append({"sku": comp, "nama": comp, "qty": qty})
-    return expanded
 
 
 def rekap_sku(data: list[dict], split_bundles: bool = True) -> list[dict]:
@@ -57,9 +22,9 @@ def rekap_sku(data: list[dict], split_bundles: bool = True) -> list[dict]:
     if not data:
         return []
 
-    # Expand bundles jika diminta
+    # Expand bundles jika diminta (aturan split + BUBBLEWRAP+KARDUS ada di parser)
     if split_bundles:
-        data = _expand_by_component(data)
+        data = bigseller_parser.split_bundles(data)
 
     # Gunakan pandas untuk groupby + sum
     df = pd.DataFrame(data)

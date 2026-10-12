@@ -43,7 +43,8 @@ def _parse(text: str) -> dict[str, list[tuple[str, int]]]:
             if sku and multiplier > 0:
                 parsed.append((sku, multiplier))
         if name and parsed:
-            groups[name] = parsed
+            # nama grup sama muncul 2x di config → digabung, bukan ditimpa
+            groups.setdefault(name, []).extend(parsed)
     return groups
 
 
@@ -61,7 +62,7 @@ def load_groups() -> dict[str, list[tuple[str, int]]]:
     return _parse(text)
 
 
-def combine_groups(rows: list[dict]) -> list[dict]:
+def combine_groups(rows: list[dict], groups: dict | None = None) -> list[dict]:
     """
     Gabungkan baris hasil groupby sesuai konfigurasi grup.
 
@@ -72,6 +73,7 @@ def combine_groups(rows: list[dict]) -> list[dict]:
 
     Args:
         rows: [{"sku": ..., "total_qty": int}, ...]
+        groups: Konfigurasi grup (default: baca sku_groups.txt)
 
     Returns:
         Baris anggota grup diganti baris hasil gabungan (qty x multiplier +
@@ -80,7 +82,8 @@ def combine_groups(rows: list[dict]) -> list[dict]:
     if not rows:
         return rows
 
-    groups = load_groups()
+    if groups is None:
+        groups = load_groups()
     if not groups:
         return rows
 

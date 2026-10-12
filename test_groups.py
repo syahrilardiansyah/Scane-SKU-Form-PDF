@@ -1,0 +1,61 @@
+"""
+Self-check konfigurasi & logika grup SKU. Jalankan: python test_groups.py
+"""
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent))
+
+from app.sku_group import _parse, combine_groups
+
+
+def test_parse_multiplier():
+    g = _parse("A = A1*1, A2*2\nB = A2*3")
+    assert g["A"] == [("A1", 1), ("A2", 2)]
+    assert g["B"] == [("A2", 3)]
+
+
+def test_duplicate_name_merges():
+    g = _parse("G = X*1\nG = Y*2")
+    assert g["G"] == [("X", 1), ("Y", 2)]
+
+
+def test_bad_multiplier_skipped():
+    g = _parse("G = X*1, Y*abc, Z*0")
+    assert g["G"] == [("X", 1)]
+
+
+def test_combine_multi_group():
+    groups = {"Lap": [("Lap2", 2)], "Box": [("Lap2", 1)]}
+    out = combine_groups([{"sku": "Lap2", "total_qty": 10}], groups=groups)
+    by = {r["sku"]: r["total_qty"] for r in out}
+    assert by == {"Lap": 20, "Box": 10}
+
+
+def test_combine_keeps_others_and_group_row():
+    groups = {"Body": [("Body1", 1), ("Body2", 2)]}
+    rows = [
+        {"sku": "Body1", "total_qty": 5},
+        {"sku": "Body2", "total_qty": 2},
+        {"sku": "Body", "total_qty": 3},    # baris mentah bernama sama grup → x1
+        {"sku": "Sikat", "total_qty": 7},   # bukan anggota grup
+    ]
+    out = combine_groups(rows, groups=groups)
+    by = {r["sku"]: r["total_qty"] for r in out}
+    assert by == {"Body": 12, "Sikat": 7}
+    breakdown = next(r["breakdown"] for r in out if r["sku"] == "Body")
+    assert breakdown == "Body1 (5x1) + Body2 (2x2) + Body (3x1)"
+
+
+def test_empty_and_no_groups():
+    assert combine_groups([], groups={"G": [("X", 1)]}) == []
+    rows = [{"sku": "X", "total_qty": 1}]
+    assert combine_groups(rows, groups={}) == rows
+
+
+if __name__ == "__main__":
+    tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
+    for fn in tests:
+        fn()
+        print(f"OK  {fn.__name__}")
+    print(f"semua lulus ({len(tests)} tes)")
