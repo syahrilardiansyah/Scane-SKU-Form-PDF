@@ -1,6 +1,6 @@
 ﻿# Rekap SKU PDF Scanner
 
-**Version: 2.1.10**
+**Version: 2.1.11**
 
 Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, Nama, Quantity), mengelompokkan berdasarkan SKU, dan mengekspor hasil rekap ke Excel.
 
@@ -9,7 +9,7 @@ Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, N
 **Untuk user yang tidak paham coding, langsung download:**
 
 1. Buka [Releases](https://github.com/syahrilardiansyah/Rekap_SKU_PDF/releases)
-2. Download `RekapSKU-v2.1.10.zip`
+2. Download `RekapSKU-v2.1.11.zip`
 3. Extract ke sembarang folder
 4. Double-click `RekapSKU.exe`
 5. Langsung pakai - tidak perlu install apapun!
@@ -126,7 +126,7 @@ Edit `freebie_keywords.txt` — satu keyword per baris, `#` untuk komentar. Tida
 **Pencocokan hanya ke kolom SKU** (bukan nama/deskripsi produk), supaya produk legit yang kebetulan menyebut freebie di deskripsinya (contoh: `Laundry Bag ... Jaring Baju Kotor`) tidak salah di-exclude. Konsekuensinya keyword yang mengandung spasi (`sticker pack`, `gelang couple`, `free claim`) tidak akan pernah cocok karena SKU tidak punya spasi — pakai versi tanpa spasi (`stickerpack`, `gelangcouple`).
 
 **Default keywords:**
-`stickerpack`, `sticker pack`, `sticker`, `gelangcouple`, `gelang couple`, `tester`, `freebiest`, `free claim`, `freegelang`, `freesticker`, `kamper`, `kawatcuci`, `sikatsudut`, `sikatmini`, `spondaki`, `jaring`, `sarungtangan`, `glove`, `sponmandi`
+`stickerpack`, `sticker pack`, `sticker`, `gelangcouple`, `gelang couple`, `tester`, `freebiest`, `free claim`, `freegelang`, `freesticker`, `kamper`, `kawatcuci`, `sikatsudut`, `sikatmini`, `spondaki`, `jaring`, `sarungtangan`, `glove`, `sponmandi`, `sikatpunggung`
 
 ## Gabung SKU Multi-PCS (editable)
 
@@ -250,6 +250,9 @@ Rekap_SKU_PDF/
 ```
 
 ## Changelog
+
+### v2.1.11 (2026-10-12)
+- Add: Freebie keyword `sikatpunggung` — 5 PDF (TT FOB / T FO / TT FOBSE) ke-exclude otomatis; `BodywashAunty` tetap dihitung karena pencocokan ke SKU, bukan nama produk
 
 ### v2.1.10 (2026-10-10)
 - Add: Grup `LapMicrofiber = LapMicrofiber2*2` + baris turunan `BoxMicrofiber = LapMicrofiber2*1` (1 box per pack)
