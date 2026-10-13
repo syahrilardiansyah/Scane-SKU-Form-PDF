@@ -101,9 +101,9 @@ echo.
 
 :: Create zip for distribution
 echo Membuat zip untuk distribusi...
-powershell -command "Compress-Archive -Path 'dist\*' -DestinationPath 'dist\RekapSKU-v2.1.13.zip' -Force"
-if exist "dist\RekapSKU-v2.1.13.zip" (
-    echo Zip berhasil: dist\RekapSKU-v2.1.13.zip
+powershell -command "Compress-Archive -Path 'dist\*' -DestinationPath 'dist\RekapSKU-v2.1.14.zip' -Force"
+if exist "dist\RekapSKU-v2.1.14.zip" (
+    echo Zip berhasil: dist\RekapSKU-v2.1.14.zip
 ) else (
     echo Gagal membuat zip.
 )
@@ -114,6 +114,6 @@ echo   1. Copy folder "dist" ke komputer user
 echo   2. Double-click RekapSKU.exe
 echo.
 echo Untuk upload ke GitHub Releases:
-echo   Upload file: dist\RekapSKU-v2.1.13.zip
+echo   Upload file: dist\RekapSKU-v2.1.14.zip
 echo.
 pause

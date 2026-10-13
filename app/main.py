@@ -19,7 +19,7 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Rekap SKU PDF Scanner v2.1.13")
+        self.title("Rekap SKU PDF Scanner v2.1.14")
         self.geometry("950x700")
         self.minsize(850, 600)
 
@@ -45,7 +45,7 @@ class App(ctk.CTk):
 
         ctk.CTkLabel(
             header,
-            text="v2.1.13",
+            text="v2.1.14",
             font=ctk.CTkFont(size=12),
             text_color="gray",
         ).pack(side="left", padx=10)
@@ -235,8 +235,9 @@ class App(ctk.CTk):
             self.after(0, lambda: self.progress.set(0.7))
 
             df = rekap_to_dataframe(raw_data, split_bundles=True)
-            self.rekap_data = df.to_dict("records")
 
+            # rekap_data diisi di _display_results (sesudah _clear_results),
+            # kalau diisi di sini langsung ke-reset lagi waktu tabel dirender
             self.after(0, lambda: self._display_results(df))
             self.after(0, lambda: self.progress.set(1.0))
             self.after(0, lambda: self.status_label.configure(
@@ -249,6 +250,7 @@ class App(ctk.CTk):
 
     def _display_results(self, df):
         self._clear_results()
+        self.rekap_data = df.to_dict("records")
 
         total_qty = 0
         alt_colors = ["#1a1a2e", "#16213e"]
@@ -280,6 +282,8 @@ class App(ctk.CTk):
 
     def _export_excel(self):
         if not self.rekap_data or not self.pdf_path:
+            messagebox.showwarning("Belum Ada Hasil",
+                                   "Proses PDF dulu, baru bisa export.")
             return
 
         try:
