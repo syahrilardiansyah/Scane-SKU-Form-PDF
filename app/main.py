@@ -11,7 +11,7 @@ from app.pdf_reader import read_pdf_text, pdf_has_text
 from app.ocr_engine import ocr_pdf
 from app.parser import parse_auto
 from app.rekap import rekap_to_dataframe
-from app.export import export_to_excel
+from app.export import export_to_excel, export_excel_path
 from config import PDF_READ_MODE
 
 
@@ -19,7 +19,7 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Rekap SKU PDF Scanner v2.1.12")
+        self.title("Rekap SKU PDF Scanner v2.1.13")
         self.geometry("950x700")
         self.minsize(850, 600)
 
@@ -45,7 +45,7 @@ class App(ctk.CTk):
 
         ctk.CTkLabel(
             header,
-            text="v2.1.12",
+            text="v2.1.13",
             font=ctk.CTkFont(size=12),
             text_color="gray",
         ).pack(side="left", padx=10)
@@ -279,23 +279,17 @@ class App(ctk.CTk):
         self.export_btn.configure(state="normal")
 
     def _export_excel(self):
-        if not self.rekap_data:
+        if not self.rekap_data or not self.pdf_path:
             return
 
-        path = filedialog.asksaveasfilename(
-            title="Simpan Hasil Rekap",
-            defaultextension=".xlsx",
-            filetypes=[("Excel Files", "*.xlsx")],
-            initialfile="hasil_rekap.xlsx",
-        )
-
-        if path:
-            try:
-                result_path = export_to_excel(self.rekap_data, output_path=path)
-                self.export_label.configure(text=f"Tersimpan: {result_path}", text_color="#28a745")
-                messagebox.showinfo("Export Berhasil", f"File tersimpan di:\n{result_path}")
-            except Exception as e:
-                messagebox.showerror("Export Gagal", f"Error: {str(e)}")
+        try:
+            out = export_excel_path(self.pdf_path)
+            out.parent.mkdir(parents=True, exist_ok=True)
+            result_path = export_to_excel(self.rekap_data, output_path=str(out))
+            self.export_label.configure(text=f"Tersimpan: {result_path}", text_color="#28a745")
+            messagebox.showinfo("Export Berhasil", f"File tersimpan di:\n{result_path}")
+        except Exception as e:
+            messagebox.showerror("Export Gagal", f"Error: {str(e)}")
 
     def _show_error(self, message):
         self.status_label.configure(text=message, text_color="#dc3545")
@@ -305,3 +299,4 @@ class App(ctk.CTk):
 def run():
     app = App()
     app.mainloop()
+    

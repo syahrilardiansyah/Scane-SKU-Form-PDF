@@ -1,11 +1,23 @@
 """
 Export - generate file Excel dari data rekap.
 """
+import sys
 from pathlib import Path
 import pandas as pd
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 
 from config import OUTPUT_FILENAME, EXCEL_SHEET_NAME
+
+EXPORT_DIR_NAME = "export excel"
+
+
+def export_excel_path(pdf_path: str | Path) -> Path:
+    """
+    Lokasi hasil export: <folder "export excel" sebelah EXE>/<nama PDF>.xlsx
+    Contoh: C:\\app\\FO 12 SHP.pdf -> C:\\app\\export excel\\FO 12 SHP.xlsx
+    """
+    base = Path(sys.executable).parent if getattr(sys, "frozen", False) else Path(__file__).parent.parent
+    return base / EXPORT_DIR_NAME / f"{Path(pdf_path).stem}.xlsx"
 
 
 def export_to_excel(data: list[dict], output_path: str = None) -> str:

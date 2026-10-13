@@ -1,6 +1,6 @@
 ﻿# Rekap SKU PDF Scanner
 
-**Version: 2.1.12**
+**Version: 2.1.13**
 
 Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, Nama, Quantity), mengelompokkan berdasarkan SKU, dan mengekspor hasil rekap ke Excel.
 
@@ -9,7 +9,7 @@ Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, N
 **Untuk user yang tidak paham coding, langsung download:**
 
 1. Buka [Releases](https://github.com/syahrilardiansyah/Rekap_SKU_PDF/releases)
-2. Download `RekapSKU-v2.1.12.zip`
+2. Download `RekapSKU-v2.1.13.zip`
 3. Extract ke sembarang folder
 4. Double-click `RekapSKU.exe`
 5. Langsung pakai - tidak perlu install apapun!
@@ -25,7 +25,7 @@ Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, N
 3. Pilih mode baca (auto/text/ocr)
 4. Klik **Proses PDF**
 5. Lihat hasil rekap di tabel
-6. Klik **Export ke Excel** → pilih lokasi simpan
+6. Klik **Export ke Excel** → hasil tersimpan otomatis di folder `export excel` sebelah aplikasi, nama file ngikut nama PDF (contoh: `FO 12 SHP.pdf` → `export excel\FO 12 SHP.xlsx`)
 
 ## Fitur
 
@@ -38,7 +38,7 @@ Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, N
 - **OCR Engine** — membaca PDF scan/gambar via Tesseract OCR
 - **Configurable Parser** — regex pattern bisa disesuaikan dengan format PDF
 - **Rekap SKU** — mengelompokkan data dan menjumlahkan quantity per SKU
-- **Export Excel** — output ke file `.xlsx` dengan format rapi
+- **Export Excel** — output ke file `.xlsx` dengan format rapi, otomatis di folder `export excel` sebelah EXE, nama file ngikut nama PDF
 - **Remote Kill Switch** — kontrol akses aplikasi dari jarak jauh via GitHub Gist
 
 ## Keamanan
@@ -250,6 +250,10 @@ Rekap_SKU_PDF/
 ```
 
 ## Changelog
+
+### v2.1.13 (2026-10-13)
+- Change: Export Excel tanpa dialog lagi - otomatis simpan ke folder `export excel` sebelah EXE, nama file ngikut nama PDF (contoh `FO 12 SHP.pdf` → `FO 12 SHP.xlsx`), folder dibuat otomatis kalau belum ada
+- Note: file lama dengan nama yang sama akan ditimpa
 
 ### v2.1.12 (2026-10-12)
 - Fix: Nama grup yang sama muncul 2x di `sku_groups.txt` kini digabung, bukan saling timpa

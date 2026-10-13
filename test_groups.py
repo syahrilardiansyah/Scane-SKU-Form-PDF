@@ -7,6 +7,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from app.sku_group import _parse, combine_groups
+from app.export import export_excel_path
 
 
 def test_parse_multiplier():
@@ -51,6 +52,13 @@ def test_empty_and_no_groups():
     assert combine_groups([], groups={"G": [("X", 1)]}) == []
     rows = [{"sku": "X", "total_qty": 1}]
     assert combine_groups(rows, groups={}) == rows
+
+
+def test_export_path():
+    p = export_excel_path(r"C:\pdf\FO 12 SHP.pdf")
+    assert p.parent.name == "export excel"
+    assert p.name == "FO 12 SHP.xlsx"
+    assert export_excel_path(Path("a/b/TT GC TODAY.pdf")).name == "TT GC TODAY.xlsx"
 
 
 if __name__ == "__main__":
