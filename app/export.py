@@ -20,14 +20,17 @@ def export_excel_path(pdf_path: str | Path) -> Path:
     return base / EXPORT_DIR_NAME / f"{Path(pdf_path).stem}.xlsx"
 
 
-def export_to_excel(data: list[dict], output_path: str = None) -> str:
+def export_to_excel(data: list[dict], output_path: str = None, pdf_name: str = "") -> str:
     """
     Export data rekap ke file Excel.
+
+    Kolom: Nama (nama file PDF, merge vertikal) | SKU | Total Quantity | Breakdown
 
     Args:
         data: List of dict dari rekap [{"sku": "...", "total_qty": int, "breakdown": "..."}, ...]
              atau record hasil rekap_to_dataframe ({"SKU": ..., "Total Quantity": ..., ...})
         output_path: Path file output (default: hasil_rekap.xlsx)
+        pdf_name: Nama file PDF asal, tampil di kolom Nama
 
     Returns:
         Path file Excel yang dihasilkan
@@ -35,10 +38,11 @@ def export_to_excel(data: list[dict], output_path: str = None) -> str:
     if output_path is None:
         output_path = OUTPUT_FILENAME
 
-    # Kontrak kolom: SKU, Total Quantity, Breakdown
+    # Kontrak kolom: Nama, SKU, Total Quantity, Breakdown
     if data:
         df = pd.DataFrame([
             {
+                "Nama": pdf_name,
                 "SKU": item.get("SKU", item.get("sku", "")),
                 "Total Quantity": item.get("Total Quantity", item.get("total_qty", 0)),
                 "Breakdown": item.get("Breakdown", item.get("breakdown", "")) or "",
@@ -46,7 +50,7 @@ def export_to_excel(data: list[dict], output_path: str = None) -> str:
             for item in data
         ])
     else:
-        df = pd.DataFrame(columns=["SKU", "Total Quantity", "Breakdown"])
+        df = pd.DataFrame(columns=["Nama", "SKU", "Total Quantity", "Breakdown"])
 
     # Write ke Excel
     with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
@@ -80,14 +84,19 @@ def _format_worksheet(ws, data_rows: int):
         cell.border = thin_border
 
     # Format data rows
-    for row in ws.iter_rows(min_row=2, max_row=data_rows + 1, max_col=3):
+    for row in ws.iter_rows(min_row=2, max_row=data_rows + 1, max_col=4):
         for cell in row:
             cell.border = thin_border
-            # Qty column (kolom 2) rata kanan, sisanya rata kiri
-            if cell.column == 2:
+            # Qty column (kolom 3) rata kanan, sisanya rata kiri
+            if cell.column == 3:
                 cell.alignment = Alignment(horizontal="right")
             else:
                 cell.alignment = Alignment(horizontal="left")
+
+    # Nama digabung vertikal di kolom A
+    if data_rows > 1:
+        ws.merge_cells(start_row=2, start_column=1, end_row=data_rows + 1, end_column=1)
+        ws.cell(row=2, column=1).alignment = Alignment(horizontal="center", vertical="center")
 
     # Auto-width columns (dibatasi biar kolom Breakdown nggak kepanjangan)
     for col in ws.columns:

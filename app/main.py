@@ -19,7 +19,7 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Rekap SKU PDF Scanner v2.1.14")
+        self.title("Rekap SKU PDF Scanner v2.1.15")
         self.geometry("950x700")
         self.minsize(850, 600)
 
@@ -45,7 +45,7 @@ class App(ctk.CTk):
 
         ctk.CTkLabel(
             header,
-            text="v2.1.14",
+            text="v2.1.15",
             font=ctk.CTkFont(size=12),
             text_color="gray",
         ).pack(side="left", padx=10)
@@ -289,7 +289,8 @@ class App(ctk.CTk):
         try:
             out = export_excel_path(self.pdf_path)
             out.parent.mkdir(parents=True, exist_ok=True)
-            result_path = export_to_excel(self.rekap_data, output_path=str(out))
+            result_path = export_to_excel(self.rekap_data, output_path=str(out),
+                                           pdf_name=Path(self.pdf_path).stem)
             self.export_label.configure(text=f"Tersimpan: {result_path}", text_color="#28a745")
             messagebox.showinfo("Export Berhasil", f"File tersimpan di:\n{result_path}")
         except Exception as e:

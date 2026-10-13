@@ -1,6 +1,6 @@
 ﻿# Rekap SKU PDF Scanner
 
-**Version: 2.1.14**
+**Version: 2.1.15**
 
 Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, Nama, Quantity), mengelompokkan berdasarkan SKU, dan mengekspor hasil rekap ke Excel.
 
@@ -9,7 +9,7 @@ Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, N
 **Untuk user yang tidak paham coding, langsung download:**
 
 1. Buka [Releases](https://github.com/syahrilardiansyah/Rekap_SKU_PDF/releases)
-2. Download `RekapSKU-v2.1.14.zip`
+2. Download `RekapSKU-v2.1.15.zip`
 3. Extract ke sembarang folder
 4. Double-click `RekapSKU.exe`
 5. Langsung pakai - tidak perlu install apapun!
@@ -38,7 +38,7 @@ Aplikasi desktop Python untuk memindai file PDF, mengekstrak data produk (SKU, N
 - **OCR Engine** — membaca PDF scan/gambar via Tesseract OCR
 - **Configurable Parser** — regex pattern bisa disesuaikan dengan format PDF
 - **Rekap SKU** — mengelompokkan data dan menjumlahkan quantity per SKU
-- **Export Excel** — output ke file `.xlsx` dengan format rapi, otomatis di folder `export excel` sebelah EXE, nama file ngikut nama PDF
+- **Export Excel** — kolom `Nama | SKU | Total Quantity | Breakdown`, isi Nama = nama file PDF (merge vertikal), otomatis di folder `export excel` sebelah EXE, nama file ngikut nama PDF
 - **Remote Kill Switch** — kontrol akses aplikasi dari jarak jauh via GitHub Gist
 
 ## Keamanan
@@ -250,6 +250,9 @@ Rekap_SKU_PDF/
 ```
 
 ## Changelog
+
+### v2.1.15 (2026-10-13)
+- Add: Kolom `Nama` di Excel (kolom A baru, isinya nama file PDF) dengan merge vertikal; `SKU` geser ke kolom B, `Total Quantity` ke C, `Breakdown` ke D
 
 ### v2.1.14 (2026-10-13)
 - Fix: Tombol **Export ke Excel** diam saat diklik - `rekap_data` ke-reset waktu tabel dirender (`_clear_results` jalan sesudah data diisi), jadi export dari UI tidak pernah jalan. Data kini disimpan di `_display_results`

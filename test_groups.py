@@ -7,7 +7,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from app.sku_group import _parse, combine_groups
-from app.export import export_excel_path
+from app.export import export_excel_path, export_to_excel
 
 
 def test_parse_multiplier():
@@ -59,6 +59,23 @@ def test_export_path():
     assert p.parent.name == "export excel"
     assert p.name == "FO 12 SHP.xlsx"
     assert export_excel_path(Path("a/b/TT GC TODAY.pdf")).name == "TT GC TODAY.xlsx"
+
+
+def test_export_layout():
+    import tempfile
+    from openpyxl import load_workbook
+    with tempfile.TemporaryDirectory() as td:
+        out = export_to_excel(
+            [{"sku": "A1", "total_qty": 2}, {"sku": "B1", "total_qty": 3}],
+            output_path=str(Path(td) / "t.xlsx"),
+            pdf_name="REKAP BS TES",
+        )
+        ws = load_workbook(out).active
+        assert [c.value for c in ws[1]] == ["Nama", "SKU", "Total Quantity", "Breakdown"]
+        assert ws["A2"].value == "REKAP BS TES"
+        assert "A2:A3" in {str(r) for r in ws.merged_cells.ranges}
+        assert ws["B2"].value == "A1" and ws["C3"].value == 3
+        assert ws["B2"].alignment.horizontal != "right" and ws["C2"].alignment.horizontal == "right"
 
 
 if __name__ == "__main__":
